@@ -879,6 +879,12 @@
             color: var(--text-dark);
             border-bottom-left-radius: 5px;
         }
+        
+        .received-message {
+            background: #e9ecef;
+            color: var(--text-dark);
+            border-bottom-left-radius: 5px;
+        }
 
         .chat-footer {
             padding: 15px;
@@ -1440,6 +1446,10 @@
             .subject-files {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
+            
+            .chat-container {
+                width: 350px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1454,10 +1464,19 @@
             .chat-container {
                 width: 90%;
                 right: 5%;
+                bottom: 20px;
             }
             
             .schedule-table {
                 font-size: 0.9rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                margin: 5px 0;
             }
         }
 
@@ -1513,6 +1532,35 @@
             .schedule-table th, .schedule-table td {
                 padding: 8px 10px;
             }
+            
+            .chat-container {
+                width: 95%;
+                right: 2.5%;
+            }
+            
+            .modal {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .group-chat-footer {
+                flex-direction: column;
+            }
+        }
+        
+        /* Reset password form styling */
+        .reset-form-container {
+            display: none;
+        }
+        
+        .reset-form-container.active {
+            display: block;
+        }
+        
+        .reset-instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
         }
     </style>
 </head>
@@ -1586,7 +1634,7 @@
                         <i class="fab fa-google"></i> Login with Google
                     </button>
                     
-                    <a href="#" class="forgot-link">Forgot Password?</a>
+                    <a href="#" class="forgot-link" id="forgot-password-link">Forgot Password?</a>
                 </div>
                 
                 <!-- Register Form -->
@@ -1661,6 +1709,43 @@
                     </div>
                     
                     <button class="btn btn-primary" id="register-btn">Create Account</button>
+                </div>
+                
+                <!-- Forgot Password Form -->
+                <div class="form-container" id="forgot-form">
+                    <div class="reset-instructions">
+                        <p>Enter your college email address to receive a password reset link.</p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="forgot-email" placeholder="College Email (e.g., name@college.edu)" required
+                                   pattern=".+@college\.edu$" title="Please enter a valid college email address">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="send-reset-btn">Send Reset Link</button>
+                    <a href="#" class="forgot-link back-to-login">Back to Login</a>
+                </div>
+                
+                <!-- Reset Password Form -->
+                <div class="form-container" id="reset-form">
+                    <div class="reset-instructions">
+                        <p>Enter your new password below.</p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-password" placeholder="New Password" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-confirm-password" placeholder="Confirm New Password" required>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="reset-password-btn">Reset Password</button>
+                    <a href="#" class="forgot-link back-to-login">Back to Login</a>
                 </div>
             </div>
         </div>
@@ -2343,7 +2428,10 @@
                     darkMode: false,
                     notifications: true,
                     answerLength: 4
-                }
+                },
+                aiChatHistory: [],
+                notes: [],
+                subjectFiles: {}
             };
             
             users.push(newUser);
@@ -2382,6 +2470,121 @@
             // Check if last login was within 24 hours (86400000 ms)
             const twentyFourHours = 24 * 60 * 60 * 1000;
             return (Date.now() - user.lastLogin) < twentyFourHours;
+        }
+        
+        // Forgot password functionality
+        function setupForgotPassword() {
+            const forgotLink = document.getElementById('forgot-password-link');
+            const sendResetBtn = document.getElementById('send-reset-btn');
+            const resetPasswordBtn = document.getElementById('reset-password-btn');
+            const backToLoginLinks = document.querySelectorAll('.back-to-login');
+            
+            // Forgot password link
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('forgot-form').classList.add('active');
+            });
+            
+            // Back to login links
+            backToLoginLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                    document.getElementById('login-form').classList.add('active');
+                });
+            });
+            
+            // Send reset link
+            sendResetBtn.addEventListener('click', function() {
+                const email = document.getElementById('forgot-email').value.trim();
+                
+                if (!email) {
+                    showNotification('Please enter your email', false);
+                    return;
+                }
+                
+                const users = getUsers();
+                const user = users.find(u => u.email === email);
+                
+                if (!user) {
+                    showNotification('No account found with that email', false);
+                    return;
+                }
+                
+                // Generate reset token (simple for demo, in real app use a secure method)
+                const resetToken = Math.random().toString(36).substr(2, 15);
+                
+                // Store token in user object
+                user.resetToken = resetToken;
+                user.resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+                
+                // Update user in storage
+                const userIndex = users.findIndex(u => u.id === user.id);
+                users[userIndex] = user;
+                saveUsers(users);
+                
+                // Show success message with token (in real app, send email)
+                showNotification(`Password reset link sent to ${email}. Token: ${resetToken}`);
+                
+                // Switch to reset form
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('reset-form').classList.add('active');
+            });
+            
+            // Reset password
+            resetPasswordBtn.addEventListener('click', function() {
+                const newPassword = document.getElementById('reset-password').value;
+                const confirmPassword = document.getElementById('reset-confirm-password').value;
+                
+                if (!newPassword || !confirmPassword) {
+                    showNotification('Please fill in all fields', false);
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showNotification('Passwords do not match', false);
+                    return;
+                }
+                
+                // Get token from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                
+                if (!token) {
+                    showNotification('Reset token is missing', false);
+                    return;
+                }
+                
+                const users = getUsers();
+                const user = users.find(u => u.resetToken === token && u.resetTokenExpiry > Date.now());
+                
+                if (!user) {
+                    showNotification('Invalid or expired reset token', false);
+                    return;
+                }
+                
+                // Update password
+                user.password = newPassword;
+                delete user.resetToken;
+                delete user.resetTokenExpiry;
+                
+                // Update user in storage
+                const userIndex = users.findIndex(u => u.id === user.id);
+                users[userIndex] = user;
+                saveUsers(users);
+                
+                // Show success message
+                showNotification('Password reset successfully!');
+                
+                // Clear form
+                document.getElementById('reset-password').value = '';
+                document.getElementById('reset-confirm-password').value = '';
+                
+                // Switch to login form
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('login-form').classList.add('active');
+            });
         }
         
         // Login functionality
@@ -2429,7 +2632,7 @@
                     // Apply user preferences
                     applyUserPreferences(user);
                     
-                    // LOAD GROUPS AFTER LOGIN - FIXED ISSUE
+                    // Load groups after login
                     loadGroups();
                     
                     showNotification(`Welcome back, ${user.username}!`);
@@ -2788,11 +2991,19 @@
                 return;
             }
             
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
             group.messages.forEach(message => {
                 const user = getUsers().find(u => u.id === message.sender);
                 if (user) {
                     const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message group-message';
+                    
+                    // Determine message class based on sender
+                    if (message.sender === currentUser.id) {
+                        messageDiv.className = 'message user-message';
+                    } else {
+                        messageDiv.className = 'message received-message';
+                    }
                     
                     // Check if message is a file
                     if (message.isFile) {
@@ -2867,7 +3078,7 @@
                 // Add message to chat
                 const chatBody = document.getElementById('group-chat-body');
                 const messageDiv = document.createElement('div');
-                messageDiv.className = 'message group-message';
+                messageDiv.className = 'message user-message';
                 messageDiv.innerHTML = `
                     <strong>${currentUser.username}:</strong> 
                     <div style="margin-top: 5px;">
@@ -2918,7 +3129,7 @@
                 // Add message to chat
                 const chatBody = document.getElementById('group-chat-body');
                 const messageDiv = document.createElement('div');
-                messageDiv.className = 'message group-message';
+                messageDiv.className = 'message user-message';
                 messageDiv.innerHTML = `<strong>${currentUser.username}:</strong> ${messageText}`;
                 chatBody.appendChild(messageDiv);
                 
@@ -2947,22 +3158,43 @@
                 // Show the file name in the upload area
                 document.getElementById('selected-file-name').textContent = `Selected: ${file.name}`;
                 showNotification(`File "${file.name}" selected. Click "Upload" to complete.`);
-            });
-            
-            // Notes file upload
-            const notesUploadBtn = document.getElementById('notes-upload-btn');
-            const notesFileUpload = document.getElementById('notes-file-upload');
-            
-            notesUploadBtn.addEventListener('click', () => {
-                notesFileUpload.click();
-            });
-            
-            notesFileUpload.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
                 
-                // In a real app, you would show the file name in the notes upload area
-                showNotification(`Note "${file.name}" selected. Click "Upload" to complete.`);
+                // Save to user's subject files
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) return;
+                
+                const subject = document.getElementById('subject-name').textContent.toLowerCase();
+                
+                if (!currentUser.subjectFiles) {
+                    currentUser.subjectFiles = {};
+                }
+                
+                if (!currentUser.subjectFiles[subject]) {
+                    currentUser.subjectFiles[subject] = [];
+                }
+                
+                const newFile = {
+                    id: Date.now().toString(),
+                    name: file.name,
+                    type: file.type,
+                    size: formatFileSize(file.size),
+                    uploadedAt: new Date().toISOString()
+                };
+                
+                currentUser.subjectFiles[subject].push(newFile);
+                
+                // Update user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update users in storage
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    saveUsers(users);
+                }
+                
+                showNotification(`File "${file.name}" saved successfully!`);
             });
         }
         
@@ -3109,6 +3341,20 @@
             // Open chat
             aiCard.addEventListener('click', () => {
                 chatContainer.style.display = 'block';
+                
+                // Load chat history
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser && currentUser.aiChatHistory && currentUser.aiChatHistory.length > 0) {
+                    chatBody.innerHTML = '';
+                    currentUser.aiChatHistory.forEach(msg => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        messageDiv.classList.add(`${msg.role === 'user' ? 'user-message' : 'bot-message'}`);
+                        messageDiv.textContent = msg.content;
+                        chatBody.appendChild(messageDiv);
+                    });
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
             });
             
             // Close chat
@@ -3156,6 +3402,9 @@
                     
                     // Add AI response
                     addMessage(response, 'bot');
+                    
+                    // Save chat history to user profile
+                    saveChatHistory(message, response);
                 } catch (error) {
                     console.error('Error calling Gemini API:', error);
                     addMessage("I'm having trouble generating a response. Please try again later.", 'bot');
@@ -3171,6 +3420,41 @@
                 
                 chatBody.appendChild(messageDiv);
                 chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            
+            // Save chat history to user profile
+            function saveChatHistory(userMessage, botResponse) {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) return;
+                
+                if (!currentUser.aiChatHistory) {
+                    currentUser.aiChatHistory = [];
+                }
+                
+                // Add user message
+                currentUser.aiChatHistory.push({
+                    role: 'user',
+                    content: userMessage,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Add bot response
+                currentUser.aiChatHistory.push({
+                    role: 'bot',
+                    content: botResponse,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Update current user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update users in storage
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    saveUsers(users);
+                }
             }
             
             // Call Gemini API
@@ -3233,6 +3517,7 @@
             setupPasswordChange();
             setupThemeToggle();
             setupNotificationsToggle();
+            setupForgotPassword();
             
             // Check if session is valid
             if (isSessionValid()) {
@@ -3258,7 +3543,7 @@
                 // Apply user preferences
                 applyUserPreferences(currentUser);
                 
-                // LOAD GROUPS AFTER LOGIN - FIXED ISSUE
+                // Load groups after login
                 loadGroups();
                 
                 showNotification(`Welcome back, ${currentUser.username}!`);
@@ -3282,7 +3567,10 @@
                             darkMode: false,
                             notifications: true,
                             answerLength: 4
-                        }
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {}
                     },
                     {
                         id: '2',
@@ -3299,7 +3587,10 @@
                             darkMode: false,
                             notifications: true,
                             answerLength: 4
-                        }
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {}
                     },
                     {
                         id: '3',
@@ -3316,7 +3607,10 @@
                             darkMode: false,
                             notifications: true,
                             answerLength: 4
-                        }
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {}
                     },
                     {
                         id: '4',
@@ -3333,7 +3627,10 @@
                             darkMode: false,
                             notifications: true,
                             answerLength: 4
-                        }
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {}
                     }
                 ];
                 saveUsers(users);
