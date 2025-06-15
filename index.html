@@ -420,6 +420,22 @@
             color: var(--text-dark);
         }
 
+        .department-year-info {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .department-year-info i {
+            margin-right: 10px;
+        }
+
         .cards-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1061,6 +1077,7 @@
             align-items: center;
             padding: 12px 0;
             border-bottom: 1px solid #f1f3f5;
+            color: var(--text-dark); /* Fix for dark mode text visibility */
         }
 
         .settings-option:last-child {
@@ -1562,6 +1579,89 @@
             margin-bottom: 20px;
             color: #666;
         }
+
+        /* Dark mode text visibility improvements */
+        .dark-theme .card-content p {
+            color: #bbb;
+        }
+        
+        .dark-theme .file-content h4 {
+            color: #f0f0f0;
+        }
+        
+        .dark-theme .file-meta {
+            color: #aaa;
+        }
+        
+        .dark-theme .subject-card .card-badge {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .dark-theme .info-card {
+            background: #2a2a3a;
+        }
+        
+        .dark-theme .schedule-table {
+            background: #2a2a3a;
+            color: #f0f0f0;
+        }
+        
+        .dark-theme .schedule-table th {
+            background: var(--secondary);
+        }
+        
+        .dark-theme .schedule-table tr:nth-child(even) {
+            background-color: #323244;
+        }
+        
+        .dark-theme .schedule-table tr:hover {
+            background-color: #3a3a4a;
+        }
+        
+        /* Fixes for dark mode text visibility */
+        .dark-theme .upload-area h3,
+        .dark-theme .upload-area p {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .settings-option {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .group-chat-header h2,
+        .dark-theme .group-chat-header p {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .bot-message,
+        .dark-theme .received-message {
+            background: #3a3a4a;
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .group-chat-body {
+            background: #2a2a3a;
+        }
+        
+        .dark-theme .group-chat-input input {
+            background: #3a3a4a;
+            color: var(--text-dark);
+            border-color: #555;
+        }
+        
+        /* Department year info */
+        .department-year-info {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -1649,8 +1749,8 @@
                     <div class="form-group">
                         <div class="input-group">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" id="register-email" placeholder="College Email (e.g., name@college.edu)" required
-                                   pattern=".+@college\.edu$" title="Please enter a valid college email address">
+                            <input type="email" id="register-email" placeholder="Email (e.g., name@gmail.com)" required
+                                   pattern=".+@gmail\.com$" title="Please enter a valid gmail address">
                         </div>
                     </div>
                     
@@ -1714,13 +1814,13 @@
                 <!-- Forgot Password Form -->
                 <div class="form-container" id="forgot-form">
                     <div class="reset-instructions">
-                        <p>Enter your college email address to receive a password reset link.</p>
+                        <p>Enter your email address to receive a password reset link.</p>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" id="forgot-email" placeholder="College Email (e.g., name@college.edu)" required
-                                   pattern=".+@college\.edu$" title="Please enter a valid college email address">
+                            <input type="email" id="forgot-email" placeholder="Email (e.g., name@gmail.com)" required
+                                   pattern=".+@gmail\.com$" title="Please enter a valid gmail address">
                         </div>
                     </div>
                     <button class="btn btn-primary" id="send-reset-btn">Send Reset Link</button>
@@ -1814,73 +1914,13 @@
                         <p>Access all your study materials in one place</p>
                     </div>
                     
-                    <div class="cards-container">
-                        <!-- Subject Cards -->
-                        <a href="#" class="subject-card" data-subject="math">
-                            <div class="card-icon">
-                                <i class="fas fa-calculator"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>Mathematics</h3>
-                                <p>Calculus, Algebra, Statistics and more</p>
-                            </div>
-                            <div class="card-badge">12 PDFs</div>
-                        </a>
-                        
-                        <a href="#" class="subject-card" data-subject="physics">
-                            <div class="card-icon">
-                                <i class="fas fa-atom"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>Physics</h3>
-                                <p>Mechanics, Electromagnetism, Thermodynamics</p>
-                            </div>
-                            <div class="card-badge">8 PDFs</div>
-                        </a>
-                        
-                        <a href="#" class="subject-card" data-subject="chemistry">
-                            <div class="card-icon">
-                                <i class="fas fa-flask"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>Chemistry</h3>
-                                <p>Organic, Inorganic, Physical Chemistry</p>
-                            </div>
-                            <div class="card-badge">10 PDFs</div>
-                        </a>
-                        
-                        <a href="#" class="subject-card" data-subject="biology">
-                            <div class="card-icon">
-                                <i class="fas fa-dna"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>Biology</h3>
-                                <p>Genetics, Microbiology, Anatomy</p>
-                            </div>
-                            <div class="card-badge">7 PDFs</div>
-                        </a>
-                        
-                        <a href="#" class="subject-card" data-subject="computer">
-                            <div class="card-icon">
-                                <i class="fas fa-laptop-code"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>Computer Science</h3>
-                                <p>Programming, Algorithms, Databases</p>
-                            </div>
-                            <div class="card-badge">15 PDFs</div>
-                        </a>
-                        
-                        <a href="#" class="subject-card" data-subject="english">
-                            <div class="card-icon">
-                                <i class="fas fa-book"></i>
-                            </div>
-                            <div class="card-content">
-                                <h3>English</h3>
-                                <p>Literature, Writing, Communication</p>
-                            </div>
-                            <div class="card-badge">6 PDFs</div>
-                        </a>
+                    <div class="department-year-info">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span id="department-year-display">CSE - Second Year</span>
+                    </div>
+                    
+                    <div class="cards-container" id="subject-cards-container">
+                        <!-- Subject Cards will be dynamically generated here -->
                         
                         <!-- AI Assistant Card -->
                         <div class="subject-card ai-card" id="ai-assistant-card">
@@ -1914,7 +1954,7 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Email:</div>
-                                <div class="info-value" id="profile-email">john@college.edu</div>
+                                <div class="info-value" id="profile-email">john@gmail.com</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Year:</div>
@@ -1946,11 +1986,11 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Documents Uploaded:</div>
-                                <div class="info-value">24 files</div>
+                                <div class="info-value">0 files</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">Storage Used:</div>
-                                <div class="info-value">156 MB of 1 GB</div>
+                                <div class="info-value">0 MB of 1 GB</div>
                             </div>
                         </div>
                     </div>
@@ -2223,54 +2263,12 @@
                         <p>Drag & drop your files here or click to browse</p>
                         <button class="btn btn-primary" id="upload-btn">Select File</button>
                         <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
-                        <!-- Added file name display -->
                         <div id="selected-file-name" style="margin-top: 15px; font-weight: 500; color: var(--primary);"></div>
                     </div>
                     
                     <h3>Available Study Materials</h3>
                     <div class="subject-files" id="subject-files">
                         <!-- Files will be populated here -->
-                        <div class="file-card">
-                            <div class="file-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div class="file-content">
-                                <h4>Calculus Fundamentals.pdf</h4>
-                                <div class="file-meta">
-                                    <span>PDF</span>
-                                    <span>2.4 MB</span>
-                                </div>
-                                <div class="file-actions">
-                                    <button class="file-action download">
-                                        <i class="fas fa-download"></i> Download
-                                    </button>
-                                    <button class="file-action delete">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="file-card">
-                            <div class="file-icon">
-                                <i class="fas fa-file-word"></i>
-                            </div>
-                            <div class="file-content">
-                                <h4>Algebra Notes.docx</h4>
-                                <div class="file-meta">
-                                    <span>DOCX</span>
-                                    <span>1.1 MB</span>
-                                </div>
-                                <div class="file-actions">
-                                    <button class="file-action download">
-                                        <i class="fas fa-download"></i> Download
-                                    </button>
-                                    <button class="file-action delete">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -2314,6 +2312,241 @@
     <script>
         // API Key for Gemini
         const GEMINI_API_KEY = 'AIzaSyBrwQV9KxSS8c0BILDaFBSE3nRWyBysVzo';
+        
+        // Department and year subject mapping
+        const departmentSubjects = {
+            // CS-DS Subjects
+            "CS-DS": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Programming in C", icon: "fas fa-code" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" },
+                    { name: "Chemistry", icon: "fas fa-flask" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "OOPs", icon: "fas fa-object-group" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "OS", icon: "fas fa-desktop" }
+                ],
+                "III": [
+                    { name: "Machine Learning", icon: "fas fa-robot" },
+                    { name: "Data Analytics", icon: "fas fa-chart-line" },
+                    { name: "Web Development", icon: "fas fa-laptop-code" },
+                    { name: "Computer Networks", icon: "fas fa-network-wired" },
+                    { name: "Software Engineering", icon: "fas fa-cogs" }
+                ],
+                "IV": [
+                    { name: "Big Data", icon: "fas fa-database" },
+                    { name: "Cloud Computing", icon: "fas fa-cloud" },
+                    { name: "DevOps", icon: "fas fa-server" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // CSE Subjects
+            "CSE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Programming in C", icon: "fas fa-code" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" },
+                    { name: "Chemistry", icon: "fas fa-flask" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "Java", icon: "fab fa-java" },
+                    { name: "OS", icon: "fas fa-desktop" },
+                    { name: "COA", icon: "fas fa-microchip" }
+                ],
+                "III": [
+                    { name: "Computer Networks", icon: "fas fa-network-wired" },
+                    { name: "Software Engineering", icon: "fas fa-cogs" },
+                    { name: "AI", icon: "fas fa-brain" },
+                    { name: "TOC", icon: "fas fa-infinity" },
+                    { name: "Web Tech", icon: "fas fa-globe" }
+                ],
+                "IV": [
+                    { name: "Blockchain", icon: "fas fa-link" },
+                    { name: "ML Ops", icon: "fas fa-robot" },
+                    { name: "Cloud", icon: "fas fa-cloud" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // AIML Subjects
+            "AIML": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "Basic ML", icon: "fas fa-brain" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "OOP", icon: "fas fa-object-group" },
+                    { name: "Stats for ML", icon: "fas fa-chart-bar" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "AI", icon: "fas fa-brain" }
+                ],
+                "III": [
+                    { name: "Machine Learning", icon: "fas fa-robot" },
+                    { name: "Deep Learning", icon: "fas fa-brain" },
+                    { name: "NLP", icon: "fas fa-language" },
+                    { name: "Data Mining", icon: "fas fa-digging" }
+                ],
+                "IV": [
+                    { name: "Reinforcement Learning", icon: "fas fa-brain" },
+                    { name: "Computer Vision", icon: "fas fa-eye" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // IOT Subjects
+            "IOT": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "Basic IOT", icon: "fas fa-wifi" }
+                ],
+                "II": [
+                    { name: "IOT Devices", icon: "fas fa-microchip" },
+                    { name: "Embedded Systems", icon: "fas fa-microchip" },
+                    { name: "Networks", icon: "fas fa-network-wired" }
+                ],
+                "III": [
+                    { name: "Sensors", icon: "fas fa-temperature-high" },
+                    { name: "Cloud-IOT", icon: "fas fa-cloud" },
+                    { name: "AI for IOT", icon: "fas fa-brain" }
+                ],
+                "IV": [
+                    { name: "Smart Cities", icon: "fas fa-city" },
+                    { name: "Cyber-IOT", icon: "fas fa-shield-alt" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // CYS Subjects
+            "CYS": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "C/Java", icon: "fas fa-code" },
+                    { name: "Basic Security", icon: "fas fa-shield-alt" }
+                ],
+                "II": [
+                    { name: "Cryptography", icon: "fas fa-lock" },
+                    { name: "Network Security", icon: "fas fa-network-wired" },
+                    { name: "OS", icon: "fas fa-desktop" },
+                    { name: "DBMS", icon: "fas fa-database" }
+                ],
+                "III": [
+                    { name: "Cyber Laws", icon: "fas fa-gavel" },
+                    { name: "Cloud Security", icon: "fas fa-cloud" },
+                    { name: "Ethical Hacking", icon: "fas fa-user-secret" }
+                ],
+                "IV": [
+                    { name: "Threat Intelligence", icon: "fas fa-bug" },
+                    { name: "Forensics", icon: "fas fa-search" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // ECE Subjects
+            "ECE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Basic Electronics", icon: "fas fa-bolt" }
+                ],
+                "II": [
+                    { name: "DE", icon: "fas fa-microchip" },
+                    { name: "Signals", icon: "fas fa-wave-square" },
+                    { name: "EDC", icon: "fas fa-bolt" },
+                    { name: "COA", icon: "fas fa-microchip" }
+                ],
+                "III": [
+                    { name: "Embedded Systems", icon: "fas fa-microchip" },
+                    { name: "DSP", icon: "fas fa-wave-square" },
+                    { name: "VLSI", icon: "fas fa-microchip" },
+                    { name: "Communication", icon: "fas fa-satellite" }
+                ],
+                "IV": [
+                    { name: "IoT", icon: "fas fa-wifi" },
+                    { name: "Wireless Comm", icon: "fas fa-signal" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // EEE Subjects
+            "EEE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Electrical Circuits", icon: "fas fa-bolt" }
+                ],
+                "II": [
+                    { name: "EMF", icon: "fas fa-magnet" },
+                    { name: "DC Machines", icon: "fas fa-cog" },
+                    { name: "Control Sys", icon: "fas fa-sliders-h" },
+                    { name: "Measurements", icon: "fas fa-ruler" }
+                ],
+                "III": [
+                    { name: "Power Systems", icon: "fas fa-bolt" },
+                    { name: "AC Machines", icon: "fas fa-cogs" },
+                    { name: "PE", icon: "fas fa-plug" },
+                    { name: "Microcontrollers", icon: "fas fa-microchip" }
+                ],
+                "IV": [
+                    { name: "Smart Grid", icon: "fas fa-plug" },
+                    { name: "Renewable Energy", icon: "fas fa-solar-panel" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // CIVIL Subjects
+            "CIVIL": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" }
+                ],
+                "II": [
+                    { name: "Mechanics", icon: "fas fa-weight" },
+                    { name: "Building Materials", icon: "fas fa-cube" },
+                    { name: "Surveying", icon: "fas fa-ruler-combined" }
+                ],
+                "III": [
+                    { name: "RCC", icon: "fas fa-building" },
+                    { name: "Transportation", icon: "fas fa-road" },
+                    { name: "Environmental Engg", icon: "fas fa-leaf" }
+                ],
+                "IV": [
+                    { name: "Design of Structures", icon: "fas fa-drafting-compass" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // ME Subjects
+            "ME": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" }
+                ],
+                "II": [
+                    { name: "Mechanics", icon: "fas fa-weight" },
+                    { name: "Thermodynamics", icon: "fas fa-fire" },
+                    { name: "Material Science", icon: "fas fa-cubes" }
+                ],
+                "III": [
+                    { name: "Machine Design", icon: "fas fa-cogs" },
+                    { name: "Heat Transfer", icon: "fas fa-fire" },
+                    { name: "CAD/CAM", icon: "fas fa-laptop" }
+                ],
+                "IV": [
+                    { name: "IC Engines", icon: "fas fa-car" },
+                    { name: "Robotics", icon: "fas fa-robot" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            }
+        };
         
         // Create particles background
         function createParticles() {
@@ -2431,7 +2664,14 @@
                 },
                 aiChatHistory: [],
                 notes: [],
-                subjectFiles: {}
+                subjectFiles: {
+                    math: [],
+                    physics: [],
+                    chemistry: [],
+                    biology: [],
+                    computer: [],
+                    english: []
+                }
             };
             
             users.push(newUser);
@@ -2626,14 +2866,18 @@
                     document.getElementById('profile-joined').textContent = new Date(user.joined).toLocaleDateString();
                     document.getElementById('profile-lastlogin').textContent = new Date().toLocaleString();
                     
-                    // Update schedule title
-                    document.getElementById('schedule-department').textContent = user.department;
-                    
                     // Apply user preferences
                     applyUserPreferences(user);
                     
                     // Load groups after login
                     loadGroups();
+                    
+                    // Load subject cards based on department and year
+                    loadSubjectCards(user.department, user.year);
+                    
+                    // Update department-year display
+                    document.getElementById('department-year-display').textContent = 
+                        `${user.department} - ${getYearName(user.year)} Year`;
                     
                     showNotification(`Welcome back, ${user.username}!`);
                 } else {
@@ -2655,9 +2899,9 @@
                     return;
                 }
                 
-                // Validate college email
-                if (!email.endsWith('@college.edu')) {
-                    showNotification('Please use a valid college email address', false);
+                // Validate gmail email
+                if (!email.endsWith('@gmail.com')) {
+                    showNotification('Please use a valid gmail address', false);
                     return;
                 }
                 
@@ -2759,6 +3003,9 @@
             
             // Set dashboard button as active
             document.querySelector('.menu-btn[data-page="dashboard-main"]').classList.add('active');
+            
+            // Update subject card badges
+            updateSubjectCardBadges();
         }
         
         function backToGroups() {
@@ -2772,14 +3019,37 @@
             document.querySelector('.menu-btn[data-page="groups-page"]').classList.add('active');
         }
         
-        // Subject card click
-        function setupSubjectCards() {
-            const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
+        // Load subject cards based on department and year
+        function loadSubjectCards(department, year) {
+            const container = document.getElementById('subject-cards-container');
+            const aiCard = document.getElementById('ai-assistant-card');
             
-            subjectCards.forEach(card => {
+            // Clear container except for AI card
+            container.innerHTML = '';
+            
+            // Get subjects for this department and year
+            const subjects = departmentSubjects[department]?.[year] || [];
+            
+            // Create subject cards
+            subjects.forEach(subject => {
+                const card = document.createElement('a');
+                card.className = 'subject-card';
+                card.setAttribute('data-subject', subject.name.toLowerCase());
+                card.innerHTML = `
+                    <div class="card-icon">
+                        <i class="${subject.icon}"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>${subject.name}</h3>
+                        <p>Study materials and resources</p>
+                    </div>
+                    <div class="card-badge">0 PDFs</div>
+                `;
+                container.appendChild(card);
+                
+                // Add click event to open subject page
                 card.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const subject = card.getAttribute('data-subject');
                     
                     // Hide dashboard main content
                     document.getElementById('dashboard-main').style.display = 'none';
@@ -2790,16 +3060,22 @@
                     subjectPage.style.display = 'block';
                     
                     // Update subject info
-                    const subjectName = card.querySelector('h3').textContent;
-                    const subjectIcon = card.querySelector('.card-icon i').className;
-                    
-                    document.getElementById('subject-name').textContent = subjectName;
-                    document.getElementById('subject-icon').className = subjectIcon;
+                    document.getElementById('subject-name').textContent = subject.name;
+                    document.getElementById('subject-icon').className = subject.icon;
                     
                     // Clear selected file name display
                     document.getElementById('selected-file-name').textContent = '';
+                    
+                    // Load subject files
+                    loadSubjectFiles(subject.name.toLowerCase());
                 });
             });
+            
+            // Add AI card at the end
+            container.appendChild(aiCard);
+            
+            // Update badges
+            updateSubjectCardBadges();
         }
         
         // Setup group creation
@@ -3157,7 +3433,6 @@
                 
                 // Show the file name in the upload area
                 document.getElementById('selected-file-name').textContent = `Selected: ${file.name}`;
-                showNotification(`File "${file.name}" selected. Click "Upload" to complete.`);
                 
                 // Save to user's subject files
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -3194,16 +3469,90 @@
                     saveUsers(users);
                 }
                 
+                // Update subject files display
+                loadSubjectFiles(subject);
+                
+                // Update card badge
+                updateSubjectCardBadges();
+                
                 showNotification(`File "${file.name}" saved successfully!`);
             });
         }
         
+        // Format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Load subject files
+        function loadSubjectFiles(subject) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            const filesContainer = document.getElementById('subject-files');
+            filesContainer.innerHTML = '';
+            
+            if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject] || currentUser.subjectFiles[subject].length === 0) {
+                filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
+                return;
+            }
+            
+            currentUser.subjectFiles[subject].forEach(file => {
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                fileCard.innerHTML = `
+                    <div class="file-icon">
+                        <i class="${getFileIcon(file.type)}"></i>
+                    </div>
+                    <div class="file-content">
+                        <h4>${file.name}</h4>
+                        <div class="file-meta">
+                            <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
+                            <span>${file.size}</span>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-action download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="file-action delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                filesContainer.appendChild(fileCard);
+            });
+        }
+        
+        // Get file icon based on file type
+        function getFileIcon(fileType) {
+            if (fileType.includes('pdf')) return 'fas fa-file-pdf';
+            if (fileType.includes('word')) return 'fas fa-file-word';
+            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fas fa-file-powerpoint';
+            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel';
+            return 'fas fa-file';
+        }
+        
+        // Update subject card badges
+        function updateSubjectCardBadges() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || !currentUser.subjectFiles) return;
+            
+            const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
+            subjectCards.forEach(card => {
+                const subject = card.getAttribute('data-subject');
+                const badge = card.querySelector('.card-badge');
+                if (currentUser.subjectFiles[subject] && currentUser.subjectFiles[subject].length > 0) {
+                    const count = currentUser.subjectFiles[subject].length;
+                    badge.textContent = `${count} PDF${count !== 1 ? 's' : ''}`;
+                } else {
+                    badge.textContent = '0 PDFs';
+                }
+            });
         }
         
         // Setup password change functionality
@@ -3509,7 +3858,6 @@
             setupTabs();
             setupLogin();
             setupSidebar();
-            setupSubjectCards();
             setupGroupCreation();
             setupGroupChat();
             setupAIAssistant();
@@ -3546,6 +3894,13 @@
                 // Load groups after login
                 loadGroups();
                 
+                // Load subject cards based on department and year
+                loadSubjectCards(currentUser.department, currentUser.year);
+                
+                // Update department-year display
+                document.getElementById('department-year-display').textContent = 
+                    `${currentUser.department} - ${getYearName(currentUser.year)} Year`;
+                
                 showNotification(`Welcome back, ${currentUser.username}!`);
             }
             
@@ -3555,7 +3910,7 @@
                     {
                         id: '1',
                         username: 'student',
-                        email: 'student@college.edu',
+                        email: 'student@gmail.com',
                         year: 'II',
                         department: 'CSE',
                         section: 'A',
@@ -3570,12 +3925,19 @@
                         },
                         aiChatHistory: [],
                         notes: [],
-                        subjectFiles: {}
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
                     },
                     {
                         id: '2',
                         username: 'admin',
-                        email: 'admin@college.edu',
+                        email: 'admin@gmail.com',
                         year: 'IV',
                         department: 'CS-DS',
                         section: 'B',
@@ -3590,12 +3952,19 @@
                         },
                         aiChatHistory: [],
                         notes: [],
-                        subjectFiles: {}
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
                     },
                     {
                         id: '3',
                         username: 'jane',
-                        email: 'jane@college.edu',
+                        email: 'jane@gmail.com',
                         year: 'II',
                         department: 'CSE',
                         section: 'A',
@@ -3610,12 +3979,19 @@
                         },
                         aiChatHistory: [],
                         notes: [],
-                        subjectFiles: {}
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
                     },
                     {
                         id: '4',
                         username: 'mike',
-                        email: 'mike@college.edu',
+                        email: 'mike@gmail.com',
                         year: 'III',
                         department: 'AIML',
                         section: 'C',
@@ -3630,7 +4006,14 @@
                         },
                         aiChatHistory: [],
                         notes: [],
-                        subjectFiles: {}
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
                     }
                 ];
                 saveUsers(users);
