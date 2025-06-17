@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Notify</title>
+    <link rel="icon" href="favicon1.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --dark-gray: #495057;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fb;
+            --text: #343a40;
+            --border: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --accent: #7209b7;
+            --success: #4cc9f0;
+        }
+
+        .dark-mode {
+            --primary: #4895ef;
+            --secondary: #4361ee;
+            --light: #121212;
+            --dark: #e9ecef;
+            --gray: #adb5bd;
+            --light-gray: #212121;
+            --dark-gray: #343a40;
+            --card-bg: #1e1e1e;
+            --body-bg: #121212;
+            --text: #f8f9fa;
+            --border: #343a40;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --accent: #f4a097;
+            --success: #4cc9f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0 50px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 50px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .effective-date {
+            background-color: rgba(255, 255, 255, 0.15);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Policy Content */
+        .policy-content {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 50px;
+            margin-bottom: 50px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section h2 i {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .section h3 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin: 25px 0 15px;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+        }
+
+        .info-list {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        .info-list li {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .info-list li:before {
+            content: "•";
+            color: var(--primary);
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -4px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background-color: var(--light-gray);
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--card-bg);
+            padding: 30px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            font-size: 1.1rem;
+            color: var(--gray);
+        }
+
+        .heart {
+            color: #e5383b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .policy-content {
+                padding: 30px 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section h2 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Theme Toggle -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="index.html" class="logo">
+                    <!-- <i class="fas fa-bell"></i> -->
+                    <img src="favicon1.ico" alt="logo.png" style="height: 30px; vertical-align: -7px; margin-right: -10px;">
+                    otify
+                </a>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Privacy Policy</h1>
+            <p>Your trust is important to us. This policy explains how we collect, use, and protect your information when you use Notify.</p>
+            <div class="effective-date">Effective Date: June 17, 2025</div>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Content -->
+    <div class="container">
+        <div class="policy-content">
+            <div class="section">
+                <p>Thank you for using Notify, your smart assistant for last-minute exam preparation. This Privacy Policy describes how we collect, use, and protect your information when you use our services.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-database"></i> 1. Information We Collect</h2>
+                <p>We collect the following types of information to provide and improve our services:</p>
+                
+                <h3>a. Personal Information</h3>
+                <ul class="info-list">
+                    <li><strong>Name:</strong> For account identification and personalization.</li>
+                    <li><strong>Email Address / Phone Number:</strong> Used for login, communication, and notifications.</li>
+                    <li><strong>Institutional Details:</strong> (e.g., college name, department, year) if you choose to share them.</li>
+                </ul>
+                
+                <h3>b. Usage Data</h3>
+                <ul class="info-list">
+                    <li>Notes created, edited, or deleted</li>
+                    <li>Subjects accessed or searched</li>
+                    <li>Login timestamps and device type</li>
+                    <li>Analytics related to app performance (using tools like Firebase Analytics)</li>
+                </ul>
+                
+                <h3>c. Communication Data</h3>
+                <p>Messages or discussions shared via any in-app collaboration or chat tools.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-cogs"></i> 2. How We Use Your Information</h2>
+                <p>Your data is used strictly to:</p>
+                <ul class="info-list">
+                    <li>Provide and maintain the application services</li>
+                    <li>Enable secure login and user authentication</li>
+                    <li>Save and sync your notes across devices</li>
+                    <li>Send notifications or reminders (e.g., exam alerts)</li>
+                    <li>Analyze user engagement and improve user experience</li>
+                    <li>Fix bugs and detect/prevent fraud or abuse</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-share-alt"></i> 3. Data Sharing and Disclosure</h2>
+                <p>We do not sell or rent your personal data to third parties. However, we may share data:</p>
+                <ul class="info-list">
+                    <li>With third-party service providers (e.g., Firebase) strictly for hosting, analytics, and authentication.</li>
+                    <li>When legally required, to comply with legal obligations, enforce our Terms of Use, or protect the rights and safety of Notify and its users.</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-shield-alt"></i> 4. Data Security</h2>
+                <p>We take data protection seriously. All data is:</p>
+                <ul class="info-list">
+                    <li>Encrypted in transit (via HTTPS)</li>
+                    <li>Stored securely using industry best practices (e.g., Firebase Firestore with Firestore Security Rules)</li>
+                    <li>Access-controlled based on user authentication and authorization</li>
+                </ul>
+                <p>However, no system is 100% secure. While we strive to use commercially acceptable means to protect your data, we cannot guarantee absolute security.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-user-check"></i> 5. Your Rights and Choices</h2>
+                <p>You have the right to:</p>
+                <ul class="info-list">
+                    <li>Access and review your personal information</li>
+                    <li>Edit or delete your notes or account data</li>
+                    <li>Request permanent deletion of your account</li>
+                    <li>Opt-out of non-essential notifications</li>
+                </ul>
+                <p>You can manage these through your user settings or by contacting us at <a href="mailto:notifyapp@gmail.com" style="color: var(--primary);">notifyapp@gmail.com</a>.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-sync-alt"></i> 7. Changes to This Policy</h2>
+                <p>We may update this Privacy Policy periodically. All changes will be posted here, with the "Effective Date" updated at the top. Continued use of Notify after changes constitutes acceptance of the new policy.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-envelope"></i> 8. Contact Us</h2>
+                <p>If you have any questions, concerns, or feedback about this Privacy Policy or our practices, feel free to contact us:</p>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>notifyapp@gmail.com</span>
+                    </div>
+                    <!-- <div class="contact-item">
+                        <i class="fas fa-globe"></i>
+                        <span>https://notify.yourdomain.com</span>
+                    </div> -->
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Hyderabad, IN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                © 2025 Notify. All rights reserved. Crafted with <span class="heart">❤️</span> for students everywhere.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference or time-based theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const currentHour = new Date().getHours();
+            
+            if (savedTheme) {
+                document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+                updateIcon();
+            } else {
+                // Apply dark mode after 6PM (18:00)
+                if (currentHour >= 18 || currentHour < 6) {
+                    document.body.classList.add('dark-mode');
+                    updateIcon();
+                }
+            }
+        }
+        
+        function updateIcon() {
+            if (document.body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+        
+        // Toggle theme on button click
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            updateIcon();
+        });
+        
+        // Initialize theme
+        initTheme();
+    </script>
+</body>
+</html>
