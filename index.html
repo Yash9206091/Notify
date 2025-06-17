@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notify</title>
+    <link rel="icon" href="favicon1.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
     <style>
@@ -107,6 +108,31 @@
             z-index: 10;
         }
 
+        .logo-n {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent), #ff8e53);
+            border-radius: 15px; /* Changed from 0 to 15px for rounded corners */
+            margin: 0 auto 30px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: pulseLogo 3s infinite alternate;
+        }
+
+        .logo-n::before {
+            content: 'N';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
         .hero h1 {
             font-family: 'Montserrat', sans-serif;
             font-size: 4rem;
@@ -127,6 +153,36 @@
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+        }
+
+        /* Scroll down indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            z-index: 10;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-down a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .scroll-down a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         /* Animated button */
@@ -304,7 +360,12 @@
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 25px;
-            width: 220px;
+            width: 170px;
+            height: 170px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition);
         }
 
@@ -320,32 +381,36 @@
         }
 
         .demo-feature h3 {
-            font-size: 1.4rem;
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .demo-feature p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        /* Video container */
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            height: 450px;
+            border-radius: 20px;
+            margin: 40px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: #000;
         }
 
         .video-placeholder {
             width: 100%;
-            max-width: 800px;
-            height: 450px;
+            height: 100%;
             background: linear-gradient(135deg, #8e2de2, #4a00e0);
-            border-radius: 20px;
-            margin: 40px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .video-placeholder::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('https://images.unsplash.com/photo-1555099962-4199c345e5dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') center/cover;
-            opacity: 0.7;
+            cursor: pointer;
         }
 
         .play-button {
@@ -356,8 +421,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            z-index: 2;
             transition: var(--transition);
             animation: pulse 2s infinite;
         }
@@ -369,6 +432,12 @@
         .play-button i {
             font-size: 2.5rem;
             color: white;
+        }
+
+        #notifyVideo {
+            width: 100%;
+            height: 100%;
+            display: none;
         }
 
         /* Floating elements */
@@ -531,12 +600,23 @@
             100% { transform: scale(1); }
         }
 
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulseLogo {
+            0% { transform: scale(1); } /* Removed rotate(45deg) */
+            100% { transform: scale(1.05); } /* Removed rotate(45deg) */
+        }
+
         /* Responsive */
         @media (max-width: 992px) {
             .hero h1 {
                 font-size: 3.5rem;
             }
-            .video-placeholder {
+            .video-container {
                 height: 400px;
             }
         }
@@ -551,8 +631,24 @@
             .section-title, .demo h2 {
                 font-size: 2rem;
             }
-            .video-placeholder {
+            .video-container {
                 height: 300px;
+            }
+            .demo-feature {
+                width: 140px;
+                height: 140px;
+                padding: 15px;
+            }
+            .logo-n {
+                width: 70px;
+                height: 70px;
+            }
+            .logo-n::before {
+                font-size: 2.5rem;
+            }
+            .scroll-down {
+                right: 20px;
+                bottom: 20px;
             }
         }
 
@@ -566,8 +662,20 @@
             .feature-card {
                 padding: 30px 20px;
             }
-            .video-placeholder {
+            .video-container {
                 height: 200px;
+            }
+            .logo-n {
+                width: 60px;
+                height: 60px;
+            }
+            .logo-n::before {
+                font-size: 2rem;
+            }
+            .scroll-down a {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -582,10 +690,18 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
+                <div class="logo-n"></div>
                 <h1>Transform Ideas into Action with Notify Notes</h1>
                 <p>Your intelligent workspace for capturing, organizing, and sharing ideas across all devices</p>
-                <a href="home.html" class="cta-button">Get Started</a>
+                <a href="index.html" class="cta-button">Get Started</a>
             </div>
+        </div>
+        
+        <!-- Scroll down indicator -->
+        <div class="scroll-down">
+            <a href="#features">
+                <i class="fas fa-arrow-down"></i>
+            </a>
         </div>
         
         <!-- Floating elements for background -->
@@ -596,7 +712,7 @@
     </section>
 
     <!-- Features section -->
-    <section class="features">
+    <section class="features" id="features">
         <div class="container">
             <h2 class="section-title">Powerful Features</h2>
             <div class="features-grid">
@@ -605,7 +721,7 @@
                         <i class="fas fa-robot"></i>
                     </div>
                     <h3>AI Personal Assistant</h3>
-                    <p>Our intelligent assistant helps you organize, summarize, and even generate content from your notes. Get smart suggestions based on your learning patterns.</p>
+                    <p>Our intelligent assistant helps you organize, summarize, and generate content from your notes with smart suggestions.</p>
                 </div>
                 
                 <div class="feature-card">
@@ -613,7 +729,7 @@
                         <i class="fas fa-book-open"></i>
                     </div>
                     <h3>Subject-Based Organization</h3>
-                    <p>Effortlessly categorize your notes by subject, topic, or project. Access all related materials in one place with our intuitive folder system.</p>
+                    <p>Categorize notes by subject, topic, or project. Access all related materials in one place.</p>
                 </div>
                 
                 <div class="feature-card">
@@ -621,7 +737,7 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <h3>Real-Time Collaboration</h3>
-                    <p>Work together seamlessly with classmates or colleagues. See edits in real-time, leave comments, and track changes with version history.</p>
+                    <p>Work together seamlessly with real-time edits, comments, and version history tracking.</p>
                 </div>
                 
                 <div class="feature-card">
@@ -629,7 +745,7 @@
                         <i class="fas fa-brain"></i>
                     </div>
                     <h3>Smart Notes Management</h3>
-                    <p>Automatically tag, link, and connect related notes. Our smart system recognizes patterns and relationships between your ideas.</p>
+                    <p>Automatically tag, link, and connect related notes with our pattern recognition system.</p>
                 </div>
                 
                 <div class="feature-card">
@@ -637,7 +753,7 @@
                         <i class="fas fa-sync-alt"></i>
                     </div>
                     <h3>Cross-Device Sync</h3>
-                    <p>Access your notes anywhere, anytime. Seamlessly switch between your phone, tablet, and computer without missing a beat.</p>
+                    <p>Access notes anywhere, anytime. Switch between devices without missing a beat.</p>
                 </div>
                 
                 <div class="feature-card">
@@ -645,7 +761,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3>Bank-Level Security</h3>
-                    <p>Your data is encrypted end-to-end. We never sell your information and provide multiple backup options for peace of mind.</p>
+                    <p>End-to-end encrypted data with multiple backup options for peace of mind.</p>
                 </div>
             </div>
         </div>
@@ -662,27 +778,33 @@
                     <div class="demo-feature">
                         <i class="fas fa-file-upload"></i>
                         <h3>Upload Documents</h3>
-                        <p>Import PDFs, images, and text in seconds</p>
+                        <p>Import in seconds</p>
                     </div>
                     <div class="demo-feature">
                         <i class="fas fa-brain"></i>
                         <h3>AI Organization</h3>
-                        <p>Content automatically categorized</p>
+                        <p>Automatic categorization</p>
                     </div>
                     <div class="demo-feature">
                         <i class="fas fa-share-alt"></i>
                         <h3>Instant Sharing</h3>
-                        <p>Collaborate with teammates instantly</p>
+                        <p>Collaborate instantly</p>
                     </div>
                 </div>
                 
-                <div class="video-placeholder">
-                    <div class="play-button">
-                        <i class="fas fa-play"></i>
+                <div class="video-container">
+                    <div class="video-placeholder" id="videoPlaceholder">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
                     </div>
+                    <video id="notifyVideo" controls>
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-taking-notes-on-a-notebook-4331-large.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
                 
-                <a href="home.html" class="cta-button">Try Now</a>
+                <a href="index.html" class="cta-button">Try Now</a>
             </div>
         </div>
     </section>
@@ -728,7 +850,7 @@
             </div>
             
             <div class="copyright">
-                <p>© 2025 Notify. All rights reserved. Designed with passion <span class="hearts">❤️</span> for learners worldwide.</p>
+                <p>© 2025 Notify. All rights reserved. Crafted with <span class="hearts">❤️</span> for students everywhere.</p>
             </div>
         </div>
     </footer>
@@ -797,14 +919,22 @@
             el.style.background = colors[index % colors.length];
         });
         
-        // Video play button interaction
-        const playButton = document.querySelector('.play-button');
-        playButton.addEventListener('click', () => {
-            playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            setTimeout(() => {
-                playButton.innerHTML = '<i class="fas fa-play"></i>';
-                alert('Video playback would start here. This is a design demonstration.');
-            }, 1500);
+        // Video functionality
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const notifyVideo = document.getElementById('notifyVideo');
+        
+        videoPlaceholder.addEventListener('click', () => {
+            // Hide placeholder and show video
+            videoPlaceholder.style.display = 'none';
+            notifyVideo.style.display = 'block';
+            
+            // Play the video
+            notifyVideo.play();
+        });
+        
+        // Pause video when it ends to show controls
+        notifyVideo.addEventListener('ended', () => {
+            notifyVideo.controls = true;
         });
     </script>
 </body>
