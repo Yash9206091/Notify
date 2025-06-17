@@ -3,31 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notify</title>
+    <title>Notify - College Notes & AI Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
-            --primary: #6a11cb;
-            --secondary: #2575fc;
-            --accent: #ff6b6b;
-            --text: #2d3748;
-            --bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --transition: all 0.4s ease;
-            --footer-bg: #1a1a2e;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --text-dark: #333;
+            --text-light: #f8f9fa;
+            --danger: #f72585;
+            --warning: #ffb703;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --sidebar-width: 280px;
         }
 
-        .dark-mode {
-            --primary: #8a2be2;
-            --secondary: #4a86e8;
-            --accent: #ff9e7d;
-            --text: #e2e8f0;
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --shadow: rgba(0, 0, 0, 0.3);
-            --footer-bg: #0d0d1a;
+        /* Dark theme variables */
+        .dark-theme {
+            --primary: #5e72e4;
+            --secondary: #4a56d6;
+            --accent: #5b8def;
+            --success: #4fd1c5;
+            --light: #1a1c23;
+            --dark: #f8f9fa;
+            --text-dark: #f0f0f0;
+            --text-light: #333;
+            --danger: #ff6b9c;
+            --warning: #ffd166;
+            --card-bg: rgba(30, 30, 40, 0.95);
+            --glass: rgba(0, 0, 0, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -38,485 +54,22 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            color: var(--text);
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            min-height: 100vh;
-            transition: var(--transition);
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 30%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Dark mode toggle */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            background: var(--card-bg);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px var(--shadow);
-            transition: var(--transition);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .theme-toggle i {
-            font-size: 24px;
-            color: var(--accent);
-        }
-
-        /* Hero section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 100px 0 50px;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 700px;
-            text-align: center;
-            margin: 0 auto;
-            padding: 20px;
-            z-index: 10;
-        }
-
-        .hero h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 4rem;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, var(--accent), #fff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            animation: floatText 3s infinite alternate;
-        }
-
-        .hero p {
-            font-size: 1.4rem;
-            margin-bottom: 40px;
-            color: rgba(255, 255, 255, 0.9);
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Animated button */
-        .cta-button {
-            display: inline-block;
-            padding: 16px 40px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            text-decoration: none;
-            background: linear-gradient(45deg, var(--accent), #ff8e53);
-            color: white;
-            border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-            transition: var(--transition);
-            animation: pulse 2s infinite;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #ff8e53, var(--accent));
-            z-index: -1;
-            transition: opacity 0.4s ease;
-            opacity: 0;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
-        }
-
-        .cta-button:hover::before {
-            opacity: 1;
-        }
-
-        /* Features section */
-        .features {
-            padding: 100px 0;
-            background: var(--bg);
-            position: relative;
-            z-index: 2;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
-            color: var(--text);
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            border-radius: 2px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .feature-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px var(--shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px var(--shadow);
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            z-index: 2;
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 25px;
-            color: white;
-            font-size: 30px;
-            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
-        }
-
-        .feature-card h3 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            color: var(--text);
-        }
-
-        .feature-card p {
-            color: var(--text);
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        /* Demo Section */
-        .demo {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background: linear-gradient(135deg, #4361ee, #3a0ca3, #7209b7, #f72585);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .demo-content {
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-            color: white;
-            z-index: 2;
-            position: relative;
-        }
-
-        .demo h2 {
-            font-size: 2.8rem;
-            margin-bottom: 20px;
-        }
-
-        .demo p {
-            font-size: 1.4rem;
-            margin-bottom: 40px;
-            max-width: 700px;
-        }
-
-        .demo-features {
-            display: flex;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .demo-feature {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            width: 220px;
+            align-items: center;
+            color: var(--text-dark);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
             transition: var(--transition);
         }
 
-        .demo-feature:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .demo-feature i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: var(--accent);
-        }
-
-        .demo-feature h3 {
-            font-size: 1.4rem;
-            margin-bottom: 10px;
-        }
-
-        .video-placeholder {
-            width: 100%;
-            max-width: 800px;
-            height: 450px;
-            background: linear-gradient(135deg, #8e2de2, #4a00e0);
-            border-radius: 20px;
-            margin: 40px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .video-placeholder::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('https://images.unsplash.com/photo-1555099962-4199c345e5dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') center/cover;
-            opacity: 0.7;
-        }
-
-        .play-button {
-            width: 80px;
-            height: 80px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 2;
-            transition: var(--transition);
-            animation: pulse 2s infinite;
-        }
-
-        .play-button:hover {
-            transform: scale(1.1);
-        }
-
-        .play-button i {
-            font-size: 2.5rem;
-            color: white;
-        }
-
-        /* Floating elements */
-        .floating {
-            position: absolute;
-            z-index: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            animation: float 15s infinite ease-in-out;
-        }
-
-        .floating:nth-child(1) {
-            width: 150px;
-            height: 150px;
-            top: 10%;
-            left: 5%;
-            animation-duration: 20s;
-        }
-
-        .floating:nth-child(2) {
-            width: 100px;
-            height: 100px;
-            top: 70%;
-            left: 10%;
-            animation-duration: 15s;
-        }
-
-        .floating:nth-child(3) {
-            width: 200px;
-            height: 200px;
-            top: 30%;
-            right: 5%;
-            animation-duration: 25s;
-        }
-
-        .floating:nth-child(4) {
-            width: 80px;
-            height: 80px;
-            bottom: 10%;
-            right: 15%;
-            animation-duration: 12s;
-        }
-
-        /* Footer */
-        footer {
-            background: var(--footer-bg);
-            color: #e2e8f0;
-            padding: 70px 0 30px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 50px;
-        }
-
-        .footer-brand {
-            max-width: 300px;
-        }
-
-        .footer-logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(to right, var(--accent), #fff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .footer-brand p {
-            line-height: 1.8;
-            opacity: 0.8;
-        }
-
-        .footer-links h3 {
-            font-size: 1.3rem;
-            margin-bottom: 25px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .footer-links h3::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 40px;
-            height: 3px;
-            background: var(--accent);
-        }
-
-        .footer-links ul {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 15px;
-        }
-
-        .footer-links a {
-            color: #e2e8f0;
-            text-decoration: none;
-            opacity: 0.8;
-            transition: var(--transition);
-            display: inline-block;
-        }
-
-        .footer-links a:hover {
-            opacity: 1;
-            transform: translateX(5px);
-            color: var(--accent);
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            opacity: 0.7;
-        }
-
-        .hearts {
-            color: var(--accent);
-            animation: pulseHeart 1.5s infinite;
-            display: inline-block;
-        }
-
-        /* Animations */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(10deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 107, 107, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
-        }
-
-        @keyframes floatText {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
+        body.dark-theme {
+            background: linear-gradient(135deg, #2c3e50, #1a1a2e, #16213e, #0f3460);
         }
 
         @keyframes gradientBG {
@@ -525,286 +78,3978 @@
             100% { background-position: 0% 50%; }
         }
 
-        @keyframes pulseHeart {
+        /* Particles background */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px) rotate(360deg); opacity: 0; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin: 20px 0;
+            transition: var(--transition);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            position: relative;
+            color: var(--text-dark);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
-        /* Responsive */
+        .logo h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--success));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            background: var(--glass);
+            border: none;
+            padding: 12px 30px;
+            margin: 0 10px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: black;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group input, 
+        .input-group select {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-dark);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+            z-index: 2;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.6);
+        }
+
+        .btn-google {
+            background: white;
+            color: var(--text-dark);
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-google i {
+            margin-right: 10px;
+            color: #ea4335;
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard styles */
+        .dashboard {
+            display: none;
+            width: 100%;
+        }
+
+        .dashboard.active {
+            display: flex;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-right: 20px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h3 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .menu-btn:hover, .menu-btn.active {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .menu-btn i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+        }
+
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .welcome-header p {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .department-year-info {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .department-year-info i {
+            margin-right: 10px;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .subject-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            text-decoration: none;
+            display: block;
+            color: var(--text-dark);
+        }
+
+        .subject-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .card-icon {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            font-size: 1.4rem;
+        }
+
+        .card-content p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .ai-card {
+            background: linear-gradient(135deg, #7209b7, #f72585);
+            color: white;
+        }
+
+        .ai-card .card-icon {
+            background: rgba(114, 9, 183, 0.2);
+            color: white;
+        }
+
+        .ai-card .card-content h3,
+        .ai-card .card-content p {
+            color: white;
+        }
+
+        /* Subject Page */
+        .subject-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .subject-page.active {
+            display: block;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .back-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .subject-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .subject-title i {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: var(--primary);
+        }
+
+        .subject-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-icon {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(67, 97, 238, 0.1);
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .file-content {
+            padding: 15px;
+        }
+
+        .file-content h4 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .file-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .file-action {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-action i {
+            margin-right: 5px;
+        }
+
+        .file-action.download {
+            background: var(--success);
+        }
+
+        .file-action.delete {
+            background: var(--danger);
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        #file-upload {
+            display: none;
+        }
+
+        /* Profile page */
+        .profile-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .profile-page.active {
+            display: block;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            color: var(--primary);
+        }
+
+        .info-item {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 120px;
+            color: #555;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        /* Schedule Page */
+        .schedule-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .schedule-page.active {
+            display: block;
+        }
+
+        .schedule-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .schedule-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .schedule-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .schedule-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .schedule-table tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .schedule-subject {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Chat interface */
+        .chat-container {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 400px;
+            z-index: 1000;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .chat-header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-chat:hover {
+            transform: rotate(90deg);
+        }
+
+        .chat-body {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: #e9ecef;
+            color: var(--text-dark);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .group-message {
+            background: #d7f0ff;
+            color: var(--text-dark);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .received-message {
+            background: #e9ecef;
+            color: var(--text-dark);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-footer {
+            padding: 15px;
+            background: white;
+            display: flex;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .marks-dropdown {
+            position: relative;
+            margin-right: 10px;
+        }
+
+        .marks-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .marks-btn:hover {
+            background: var(--secondary);
+        }
+
+        .marks-btn i {
+            margin-left: 5px;
+        }
+
+        .marks-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+            display: none;
+            width: 120px;
+            z-index: 100;
+        }
+
+        .marks-menu.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .marks-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-dark);
+        }
+
+        .marks-option:hover {
+            background: #f1f3f5;
+        }
+
+        .chat-input {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            font-size: 1rem;
+            transition: var(--transition);
+            color: var(--text-dark);
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: var(--text-dark);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .notification.success i {
+            color: #4caf50;
+        }
+
+        .notification.error i {
+            color: #f44336;
+        }
+
+        /* Settings Page */
+        .settings-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .settings-page.active {
+            display: block;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section h3 {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f5;
+            color: var(--text-dark); /* Fix for dark mode text visibility */
+        }
+
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            font-weight: 500;
+        }
+
+        .settings-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle.active {
+            background: var(--primary);
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .theme-toggle.active::before {
+            left: 28px;
+        }
+
+        .update-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .update-btn:hover {
+            background: var(--secondary);
+        }
+
+        /* Groups Page */
+        .groups-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .groups-page.active {
+            display: block;
+        }
+
+        .groups-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .create-group-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .create-group-btn:hover {
+            background: #3ab0d3;
+        }
+
+        .groups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .group-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        .group-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 50%;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .group-card h3 {
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .group-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .member-tag {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .group-stats {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            font-size: 0.9rem;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Create Group Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.3s ease;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .members-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .member-item input {
+            margin-right: 10px;
+        }
+
+        /* Group Chat Page */
+        .group-chat-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .group-chat-page.active {
+            display: block;
+        }
+
+        .group-chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .group-chat-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .group-chat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(67, 97, 238, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .group-chat-body {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .group-chat-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        .group-chat-input {
+            flex: 1;
+            position: relative;
+        }
+
+        .group-chat-input input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            font-size: 1rem;
+            transition: var(--transition);
+            color: var(--text-dark);
+        }
+
+        .group-chat-input input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .group-send-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .group-send-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Notes Page */
+        .notes-page {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+
+        .notes-page.active {
+            display: block;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Responsive design */
         @media (max-width: 992px) {
-            .hero h1 {
-                font-size: 3.5rem;
+            .dashboard.active {
+                flex-direction: column;
             }
-            .video-placeholder {
-                height: 400px;
+            
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .subject-files {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .chat-container {
+                width: 350px;
             }
         }
 
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 3rem;
+            .logo h1 {
+                font-size: 2.5rem;
             }
-            .hero p, .demo p {
-                font-size: 1.2rem;
+            
+            .cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
-            .section-title, .demo h2 {
-                font-size: 2rem;
+            
+            .chat-container {
+                width: 90%;
+                right: 5%;
+                bottom: 20px;
             }
-            .video-placeholder {
-                height: 300px;
+            
+            .schedule-table {
+                font-size: 0.9rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                margin: 5px 0;
             }
         }
 
-        @media (max-width: 576px) {
-            .hero h1 {
-                font-size: 2.5rem;
+        @media (max-width: 480px) {
+            .tabs {
+                flex-direction: column;
+                gap: 10px;
             }
-            .hero p, .demo p {
-                font-size: 1rem;
+            
+            .tab-btn {
+                width: 100%;
+                margin: 5px 0;
             }
-            .feature-card {
-                padding: 30px 20px;
+            
+            .cards-container {
+                grid-template-columns: 1fr;
             }
-            .video-placeholder {
-                height: 200px;
+            
+            .chat-footer {
+                flex-direction: column;
+                gap: 10px;
             }
+            
+            .marks-dropdown {
+                margin-right: 0;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .marks-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .subject-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .subject-title {
+                margin-top: 15px;
+            }
+            
+            .subject-files {
+                grid-template-columns: 1fr;
+            }
+            
+            .schedule-table {
+                font-size: 0.8rem;
+            }
+            
+            .schedule-table th, .schedule-table td {
+                padding: 8px 10px;
+            }
+            
+            .chat-container {
+                width: 95%;
+                right: 2.5%;
+            }
+            
+            .modal {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .group-chat-footer {
+                flex-direction: column;
+            }
+        }
+        
+        /* Reset password form styling */
+        .reset-form-container {
+            display: none;
+        }
+        
+        .reset-form-container.active {
+            display: block;
+        }
+        
+        .reset-instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* Dark mode text visibility improvements */
+        .dark-theme .card-content p {
+            color: #bbb;
+        }
+        
+        .dark-theme .file-content h4 {
+            color: #f0f0f0;
+        }
+        
+        .dark-theme .file-meta {
+            color: #aaa;
+        }
+        
+        .dark-theme .subject-card .card-badge {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .dark-theme .info-card {
+            background: #2a2a3a;
+        }
+        
+        .dark-theme .schedule-table {
+            background: #2a2a3a;
+            color: #f0f0f0;
+        }
+        
+        .dark-theme .schedule-table th {
+            background: var(--secondary);
+        }
+        
+        .dark-theme .schedule-table tr:nth-child(even) {
+            background-color: #323244;
+        }
+        
+        .dark-theme .schedule-table tr:hover {
+            background-color: #3a3a4a;
+        }
+        
+        /* Fixes for dark mode text visibility */
+        .dark-theme .upload-area h3,
+        .dark-theme .upload-area p {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .settings-option {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .group-chat-header h2,
+        .dark-theme .group-chat-header p {
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .bot-message,
+        .dark-theme .received-message {
+            background: #3a3a4a;
+            color: var(--text-dark);
+        }
+        
+        .dark-theme .group-chat-body {
+            background: #2a2a3a;
+        }
+        
+        .dark-theme .group-chat-input input {
+            background: #3a3a4a;
+            color: var(--text-dark);
+            border-color: #555;
+        }
+        
+        /* Department year info */
+        .department-year-info {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
         }
     </style>
 </head>
 <body>
-    <!-- Dark mode toggle -->
-    <div class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon"></i>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Welcome to Notify!</span>
+    </div>
+    
+    <!-- Create Group Modal -->
+    <div class="modal-overlay" id="create-group-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Create New Group</h3>
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>Group Name</label>
+                <input type="text" id="group-name" class="input-group" placeholder="Enter group name">
+            </div>
+            
+            <label>Select Members</label>
+            <div class="members-list" id="members-list">
+                <!-- Members will be populated here -->
+            </div>
+            
+            <button class="btn btn-primary" id="confirm-create-group">Create Group</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Auth Section -->
+        <div class="auth-section" id="auth-section">
+            <div class="logo">
+                <h1>Notify</h1>
+                <p>Your Ultimate College Study Companion</p>
+            </div>
+            
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="register">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div class="form-container active" id="login-form">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="login-username" placeholder="Username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="login-password" placeholder="Password" required>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="login-btn">Login</button>
+                    
+                    <button class="btn btn-google">
+                        <i class="fab fa-google"></i> Login with Google
+                    </button>
+                    
+                    <a href="#" class="forgot-link" id="forgot-password-link">Forgot Password?</a>
+                </div>
+                
+                <!-- Register Form -->
+                <div class="form-container" id="register-form">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="register-username" placeholder="Username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="register-email" placeholder="Email (e.g., name@gmail.com)" required
+                                   pattern=".+@gmail\.com$" title="Please enter a valid gmail address">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-graduation-cap"></i>
+                            <select id="register-year" required>
+                                <option value="" disabled selected>Select Year</option>
+                                <option value="I">First Year</option>
+                                <option value="II">Second Year</option>
+                                <option value="III">Third Year</option>
+                                <option value="IV">Fourth Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Department Field -->
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-building"></i>
+                            <select id="register-department" required>
+                                <option value="" disabled selected>Select Department</option>
+                                <option value="CS-DS">CS-DS</option>
+                                <option value="AIML">AIML</option>
+                                <option value="CSE">CSE</option>
+                                <option value="EEE">EEE</option>
+                                <option value="ECE">ECE</option>
+                                <option value="ME">ME</option>
+                                <option value="CIVIL">CIVIL</option>
+                                <option value="CYS">CYS</option>
+                                <option value="IOT">IOT</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Field -->
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-users"></i>
+                            <input type="text" id="register-section" placeholder="Section (e.g., A, B, C)" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-password" placeholder="Password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="register-btn">Create Account</button>
+                </div>
+                
+                <!-- Forgot Password Form -->
+                <div class="form-container" id="forgot-form">
+                    <div class="reset-instructions">
+                        <p>Enter your email address to receive a password reset link.</p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="forgot-email" placeholder="Email (e.g., name@gmail.com)" required
+                                   pattern=".+@gmail\.com$" title="Please enter a valid gmail address">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="send-reset-btn">Send Reset Link</button>
+                    <a href="#" class="forgot-link back-to-login">Back to Login</a>
+                </div>
+                
+                <!-- Reset Password Form -->
+                <div class="form-container" id="reset-form">
+                    <div class="reset-instructions">
+                        <p>Enter your new password below.</p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-password" placeholder="New Password" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reset-confirm-password" placeholder="Confirm New Password" required>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="reset-password-btn">Reset Password</button>
+                    <a href="#" class="forgot-link back-to-login">Back to Login</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 id="sidebar-username">John Doe</h3>
+                    <p id="sidebar-year">II Year</p>
+                    <p id="sidebar-department">CSE</p>
+                </div>
+                
+                <ul class="sidebar-menu">
+                    <li>
+                        <button class="menu-btn active" data-page="dashboard-main">
+                            <i class="fas fa-home"></i> Dashboard
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" data-page="profile-page">
+                            <i class="fas fa-user"></i> Profile
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" id="ai-assistant-sidebar">
+                            <i class="fas fa-robot"></i> AI Assistant
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" data-page="groups-page">
+                            <i class="fas fa-users"></i> Study Groups
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" data-page="notes-page">
+                            <i class="fas fa-book"></i> My Notes
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" data-page="schedule-page">
+                            <i class="fas fa-calendar"></i> Schedule
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" data-page="settings-page">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                    </li>
+                    <li>
+                        <button class="menu-btn" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="main-content">
+                <!-- Dashboard Main Content -->
+                <div class="dashboard-main" id="dashboard-main">
+                    <div class="welcome-header">
+                        <h2>Welcome, <span id="username-display">Student</span>!</h2>
+                        <p>Access all your study materials in one place</p>
+                    </div>
+                    
+                    <div class="department-year-info">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span id="department-year-display">CSE - Second Year</span>
+                    </div>
+                    
+                    <div class="cards-container" id="subject-cards-container">
+                        <!-- Subject Cards will be dynamically generated here -->
+                        
+                        <!-- AI Assistant Card -->
+                        <div class="subject-card ai-card" id="ai-assistant-card">
+                            <div class="card-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>AI Study Assistant</h3>
+                                <p>Generate answers with custom length for your questions</p>
+                            </div>
+                            <div class="card-badge">New</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Page -->
+                <div class="profile-page" id="profile-page">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2>Your Profile</h2>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <div class="info-card">
+                            <h3>Personal Information</h3>
+                            <div class="info-item">
+                                <div class="info-label">Username:</div>
+                                <div class="info-value" id="profile-username">john_doe</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Email:</div>
+                                <div class="info-value" id="profile-email">john@gmail.com</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Year:</div>
+                                <div class="info-value" id="profile-year">Second Year</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Department:</div>
+                                <div class="info-value" id="profile-department">CSE</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Section:</div>
+                                <div class="info-value" id="profile-section">A</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Member Since:</div>
+                                <div class="info-value" id="profile-joined">June 12, 2025</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3>Account Settings</h3>
+                            <div class="info-item">
+                                <div class="info-label">Account Status:</div>
+                                <div class="info-value"><span class="badge" style="background: #4CAF50; color: white; padding: 3px 8px; border-radius: 10px;">Active</span></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Last Login:</div>
+                                <div class="info-value" id="profile-lastlogin">Today, 10:30 AM</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Documents Uploaded:</div>
+                                <div class="info-value">0 files</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Storage Used:</div>
+                                <div class="info-value">0 MB of 1 GB</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>Preferences</h3>
+                        <div class="info-item">
+                            <div class="info-label">Theme:</div>
+                            <div class="info-value">Light Mode</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Notification:</div>
+                            <div class="info-value">Enabled</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Default Answer Length:</div>
+                            <div class="info-value">4 Marks</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Groups Page -->
+                <div class="groups-page" id="groups-page">
+                    <div class="groups-header">
+                        <h2>Study Groups</h2>
+                        <button class="create-group-btn" id="open-create-group-modal">
+                            <i class="fas fa-plus"></i> Create Group
+                        </button>
+                    </div>
+                    
+                    <div class="groups-container" id="groups-container">
+                        <!-- Groups will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Notes Page -->
+                <div class="notes-page" id="notes-page">
+                    <div class="notes-header">
+                        <button class="back-btn" id="back-to-dashboard-notes">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="subject-title">
+                            <i class="fas fa-book"></i>
+                            <h2>My Notes</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Upload New Notes</h3>
+                        <p>Drag & drop your files here or click to browse</p>
+                        <button class="btn btn-primary" id="notes-upload-btn">Select File</button>
+                        <input type="file" id="notes-file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
+                    </div>
+                    
+                    <h3>Your Study Notes</h3>
+                    <div class="subject-files" id="notes-files">
+                        <!-- Notes will be populated here -->
+                        <div class="file-card">
+                            <div class="file-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="file-content">
+                                <h4>Calculus Notes.pdf</h4>
+                                <div class="file-meta">
+                                    <span>PDF</span>
+                                    <span>2.4 MB</span>
+                                </div>
+                                <div class="file-actions">
+                                    <button class="file-action download">
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                    <button class="file-action delete">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-card">
+                            <div class="file-icon">
+                                <i class="fas fa-file-word"></i>
+                            </div>
+                            <div class="file-content">
+                                <h4>Physics Formulas.docx</h4>
+                                <div class="file-meta">
+                                    <span>DOCX</span>
+                                    <span>1.8 MB</span>
+                                </div>
+                                <div class="file-actions">
+                                    <button class="file-action download">
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                    <button class="file-action delete">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Schedule Page -->
+                <div class="schedule-page" id="schedule-page">
+                    <div class="subject-header">
+                        <button class="back-btn" id="back-to-dashboard-schedule">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="subject-title">
+                            <i class="fas fa-calendar"></i>
+                            <h2 id="schedule-title">Exam Schedule</h2>
+                        </div>
+                    </div>
+                    
+                    <h3>Upcoming Exams for <span id="schedule-department">CSE</span> Department</h3>
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Time</th>
+                                <th>Venue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body">
+                            <tr>
+                                <td>July 10, 2025</td>
+                                <td class="schedule-subject">Mathematics</td>
+                                <td>9:00 AM - 12:00 PM</td>
+                                <td>Block A-101</td>
+                            </tr>
+                            <tr>
+                                <td>July 12, 2025</td>
+                                <td class="schedule-subject">Physics</td>
+                                <td>2:00 PM - 5:00 PM</td>
+                                <td>Block B-202</td>
+                            </tr>
+                            <tr>
+                                <td>July 15, 2025</td>
+                                <td class="schedule-subject">Computer Science</td>
+                                <td>9:00 AM - 12:00 PM</td>
+                                <td>Block C-303</td>
+                            </tr>
+                            <tr>
+                                <td>July 18, 2025</td>
+                                <td class="schedule-subject">Chemistry</td>
+                                <td>2:00 PM - 5:00 PM</td>
+                                <td>Block D-404</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Settings Page -->
+                <div class="settings-page" id="settings-page">
+                    <div class="subject-header">
+                        <button class="back-btn" id="back-to-dashboard-settings">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="subject-title">
+                            <i class="fas fa-cog"></i>
+                            <h2>Account Settings</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Change Password</h3>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="current-password" placeholder="Current Password" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="new-password" placeholder="New Password" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="confirm-new-password" placeholder="Confirm New Password" required>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="change-password-btn">Update Password</button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Preferences</h3>
+                        <div class="settings-option">
+                            <div class="settings-label">Dark Mode</div>
+                            <div class="settings-control">
+                                <div class="theme-toggle" id="theme-toggle"></div>
+                                <span id="theme-status">Off</span>
+                            </div>
+                        </div>
+                        <div class="settings-option">
+                            <div class="settings-label">Email Notifications</div>
+                            <div class="settings-control">
+                                <div class="theme-toggle" id="notifications-toggle"></div>
+                                <span id="notifications-status">On</span>
+                            </div>
+                        </div>
+                        <div class="settings-option">
+                            <div class="settings-label">Default Answer Length</div>
+                            <div class="settings-control">
+                                <select id="answer-length">
+                                    <option value="2">2 Marks</option>
+                                    <option value="4" selected>4 Marks</option>
+                                    <option value="8">8 Marks</option>
+                                    <option value="10">10 Marks</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Group Chat Page -->
+                <div class="group-chat-page" id="group-chat-page">
+                    <div class="group-chat-header">
+                        <button class="back-btn" id="back-to-groups">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="group-chat-info">
+                            <div class="group-chat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h2 id="group-chat-name">Computer Science Study Group</h2>
+                                <p id="group-chat-members">John Doe, Jane Smith, Mike Johnson</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group-chat-body" id="group-chat-body">
+                        <!-- Messages will appear here -->
+                    </div>
+                    
+                    <div class="group-chat-footer">
+                        <div class="group-chat-input">
+                            <input type="text" id="group-chat-input" placeholder="Type your message...">
+                            <button class="group-send-btn" id="group-send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <button class="file-action" id="group-attach-btn">
+                            <i class="fas fa-paperclip"></i> Attach
+                        </button>
+                        <!-- Hidden file input for attachments -->
+                        <input type="file" id="group-file-upload" style="display: none;">
+                    </div>
+                </div>
+                
+                <!-- Subject Page -->
+                <div class="subject-page" id="subject-page">
+                    <div class="subject-header">
+                        <button class="back-btn" id="back-to-dashboard">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="subject-title">
+                            <i class="fas fa-calculator" id="subject-icon"></i>
+                            <h2 id="subject-name">Mathematics</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Upload Study Materials</h3>
+                        <p>Drag & drop your files here or click to browse</p>
+                        <button class="btn btn-primary" id="upload-btn">Select File</button>
+                        <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
+                        <div id="selected-file-name" style="margin-top: 15px; font-weight: 500; color: var(--primary);"></div>
+                    </div>
+                    
+                    <h3>Available Study Materials</h3>
+                    <div class="subject-files" id="subject-files">
+                        <!-- Files will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Interface -->
+        <div class="chat-container" id="chat-container">
+            <div class="chat-header">
+                <h3>AI Study Assistant</h3>
+                <button class="close-chat" id="close-chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-body" id="chat-body">
+                <div class="message bot-message">
+                    Hello! I'm your AI study assistant. How can I help you today? You can ask me anything related to your studies, and I'll provide detailed answers based on your selected answer length.
+                </div>
+            </div>
+            <div class="chat-footer">
+                <div class="marks-dropdown">
+                    <button class="marks-btn" id="marks-btn">
+                        4M <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="marks-menu" id="marks-menu">
+                        <div class="marks-option" data-marks="2">2 Marks</div>
+                        <div class="marks-option" data-marks="4">4 Marks</div>
+                        <div class="marks-option" data-marks="8">8 Marks</div>
+                        <div class="marks-option" data-marks="10">10 Marks</div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Ask your study question...">
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Hero section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Transform Ideas into Action with Notify Notes</h1>
-                <p>Your intelligent workspace for capturing, organizing, and sharing ideas across all devices</p>
-                <a href="index.html" class="cta-button">Get Started</a>
-            </div>
-        </div>
-        
-        <!-- Floating elements for background -->
-        <div class="floating"></div>
-        <div class="floating"></div>
-        <div class="floating"></div>
-        <div class="floating"></div>
-    </section>
-
-    <!-- Features section -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Powerful Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <h3>AI Personal Assistant</h3>
-                    <p>Our intelligent assistant helps you organize, summarize, and even generate content from your notes. Get smart suggestions based on your learning patterns.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <h3>Subject-Based Organization</h3>
-                    <p>Effortlessly categorize your notes by subject, topic, or project. Access all related materials in one place with our intuitive folder system.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Real-Time Collaboration</h3>
-                    <p>Work together seamlessly with classmates or colleagues. See edits in real-time, leave comments, and track changes with version history.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>Smart Notes Management</h3>
-                    <p>Automatically tag, link, and connect related notes. Our smart system recognizes patterns and relationships between your ideas.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </div>
-                    <h3>Cross-Device Sync</h3>
-                    <p>Access your notes anywhere, anytime. Seamlessly switch between your phone, tablet, and computer without missing a beat.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Bank-Level Security</h3>
-                    <p>Your data is encrypted end-to-end. We never sell your information and provide multiple backup options for peace of mind.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Demo Section -->
-    <section class="demo">
-        <div class="container">
-            <div class="demo-content">
-                <h2>See Notify in Action</h2>
-                <p>Watch how Notify transforms your study workflow with intelligent organization, collaborative features, and AI-powered insights that help you learn more effectively.</p>
-                
-                <div class="demo-features">
-                    <div class="demo-feature">
-                        <i class="fas fa-file-upload"></i>
-                        <h3>Upload Documents</h3>
-                        <p>Import PDFs, images, and text in seconds</p>
-                    </div>
-                    <div class="demo-feature">
-                        <i class="fas fa-brain"></i>
-                        <h3>AI Organization</h3>
-                        <p>Content automatically categorized</p>
-                    </div>
-                    <div class="demo-feature">
-                        <i class="fas fa-share-alt"></i>
-                        <h3>Instant Sharing</h3>
-                        <p>Collaborate with teammates instantly</p>
-                    </div>
-                </div>
-                
-                <div class="video-placeholder">
-                    <div class="play-button">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>
-                
-                <a href="index.html" class="cta-button">Try Now</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="footer-logo">Notify</div>
-                    <p>The future of academic collaboration. Organize, share, and enhance your learning experience with AI-powered insights and seamless collaboration tools.</p>
-                </div>
-                
-                <div class="footer-links">
-                    <h3>Legal & Feedback</h3>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Privacy Policy</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Terms of Service</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Leave Feedback</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Contact Support</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-links">
-                    <h3>Resources</h3>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Documentation</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Tutorials</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Webinars</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-links">
-                    <h3>Connect With Us</h3>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Twitter</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> Instagram</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> LinkedIn</a></li>
-                        <li><a href="#"><i class="fas fa-chevron-right"></i> YouTube</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="copyright">
-                <p>© 2025 Notify. All rights reserved. Crafted with <span class="hearts">❤️</span> for students everywhere.</p>
-            </div>
-        </div>
-    </footer>
-
     <script>
-        // Dark Mode Functionality
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-        const icon = themeToggle.querySelector('i');
+        // API Key for Gemini
+        const GEMINI_API_KEY = 'AIzaSyBeYmFQLyhoTy0KnDBqbNRL-ir7hdpVglg';
         
-        // Check for saved theme preference or time-based theme
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const currentHour = new Date().getHours();
+        // Department and year subject mapping
+        const departmentSubjects = {
+            // CS-DS Subjects
+            "CS-DS": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Programming in C", icon: "fas fa-code" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" },
+                    { name: "Chemistry", icon: "fas fa-flask" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "OOPs", icon: "fas fa-object-group" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "OS", icon: "fas fa-desktop" }
+                ],
+                "III": [
+                    { name: "Machine Learning", icon: "fas fa-robot" },
+                    { name: "Data Analytics", icon: "fas fa-chart-line" },
+                    { name: "Web Development", icon: "fas fa-laptop-code" },
+                    { name: "Computer Networks", icon: "fas fa-network-wired" },
+                    { name: "Software Engineering", icon: "fas fa-cogs" }
+                ],
+                "IV": [
+                    { name: "Big Data", icon: "fas fa-database" },
+                    { name: "Cloud Computing", icon: "fas fa-cloud" },
+                    { name: "DevOps", icon: "fas fa-server" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // CSE Subjects
+            "CSE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Programming in C", icon: "fas fa-code" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" },
+                    { name: "Chemistry", icon: "fas fa-flask" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "Java", icon: "fab fa-java" },
+                    { name: "OS", icon: "fas fa-desktop" },
+                    { name: "COA", icon: "fas fa-microchip" }
+                ],
+                "III": [
+                    { name: "Computer Networks", icon: "fas fa-network-wired" },
+                    { name: "Software Engineering", icon: "fas fa-cogs" },
+                    { name: "AI", icon: "fas fa-brain" },
+                    { name: "TOC", icon: "fas fa-infinity" },
+                    { name: "Web Tech", icon: "fas fa-globe" }
+                ],
+                "IV": [
+                    { name: "Blockchain", icon: "fas fa-link" },
+                    { name: "ML Ops", icon: "fas fa-robot" },
+                    { name: "Cloud", icon: "fas fa-cloud" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // AIML Subjects
+            "AIML": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "Basic ML", icon: "fas fa-brain" }
+                ],
+                "II": [
+                    { name: "DSA", icon: "fas fa-project-diagram" },
+                    { name: "OOP", icon: "fas fa-object-group" },
+                    { name: "Stats for ML", icon: "fas fa-chart-bar" },
+                    { name: "DBMS", icon: "fas fa-database" },
+                    { name: "AI", icon: "fas fa-brain" }
+                ],
+                "III": [
+                    { name: "Machine Learning", icon: "fas fa-robot" },
+                    { name: "Deep Learning", icon: "fas fa-brain" },
+                    { name: "NLP", icon: "fas fa-language" },
+                    { name: "Data Mining", icon: "fas fa-digging" }
+                ],
+                "IV": [
+                    { name: "Reinforcement Learning", icon: "fas fa-brain" },
+                    { name: "Computer Vision", icon: "fas fa-eye" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // IOT Subjects
+            "IOT": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Python", icon: "fab fa-python" },
+                    { name: "Basic IOT", icon: "fas fa-wifi" }
+                ],
+                "II": [
+                    { name: "IOT Devices", icon: "fas fa-microchip" },
+                    { name: "Embedded Systems", icon: "fas fa-microchip" },
+                    { name: "Networks", icon: "fas fa-network-wired" }
+                ],
+                "III": [
+                    { name: "Sensors", icon: "fas fa-temperature-high" },
+                    { name: "Cloud-IOT", icon: "fas fa-cloud" },
+                    { name: "AI for IOT", icon: "fas fa-brain" }
+                ],
+                "IV": [
+                    { name: "Smart Cities", icon: "fas fa-city" },
+                    { name: "Cyber-IOT", icon: "fas fa-shield-alt" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // CYS Subjects
+            "CYS": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "C/Java", icon: "fas fa-code" },
+                    { name: "Basic Security", icon: "fas fa-shield-alt" }
+                ],
+                "II": [
+                    { name: "Cryptography", icon: "fas fa-lock" },
+                    { name: "Network Security", icon: "fas fa-network-wired" },
+                    { name: "OS", icon: "fas fa-desktop" },
+                    { name: "DBMS", icon: "fas fa-database" }
+                ],
+                "III": [
+                    { name: "Cyber Laws", icon: "fas fa-gavel" },
+                    { name: "Cloud Security", icon: "fas fa-cloud" },
+                    { name: "Ethical Hacking", icon: "fas fa-user-secret" }
+                ],
+                "IV": [
+                    { name: "Threat Intelligence", icon: "fas fa-bug" },
+                    { name: "Forensics", icon: "fas fa-search" },
+                    { name: "Capstone", icon: "fas fa-graduation-cap" }
+                ]
+            },
+            // ECE Subjects
+            "ECE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Basic Electronics", icon: "fas fa-bolt" }
+                ],
+                "II": [
+                    { name: "DE", icon: "fas fa-microchip" },
+                    { name: "Signals", icon: "fas fa-wave-square" },
+                    { name: "EDC", icon: "fas fa-bolt" },
+                    { name: "COA", icon: "fas fa-microchip" }
+                ],
+                "III": [
+                    { name: "Embedded Systems", icon: "fas fa-microchip" },
+                    { name: "DSP", icon: "fas fa-wave-square" },
+                    { name: "VLSI", icon: "fas fa-microchip" },
+                    { name: "Communication", icon: "fas fa-satellite" }
+                ],
+                "IV": [
+                    { name: "IoT", icon: "fas fa-wifi" },
+                    { name: "Wireless Comm", icon: "fas fa-signal" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // EEE Subjects
+            "EEE": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Electrical Circuits", icon: "fas fa-bolt" }
+                ],
+                "II": [
+                    { name: "EMF", icon: "fas fa-magnet" },
+                    { name: "DC Machines", icon: "fas fa-cog" },
+                    { name: "Control Sys", icon: "fas fa-sliders-h" },
+                    { name: "Measurements", icon: "fas fa-ruler" }
+                ],
+                "III": [
+                    { name: "Power Systems", icon: "fas fa-bolt" },
+                    { name: "AC Machines", icon: "fas fa-cogs" },
+                    { name: "PE", icon: "fas fa-plug" },
+                    { name: "Microcontrollers", icon: "fas fa-microchip" }
+                ],
+                "IV": [
+                    { name: "Smart Grid", icon: "fas fa-plug" },
+                    { name: "Renewable Energy", icon: "fas fa-solar-panel" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // CIVIL Subjects
+            "CIVIL": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" }
+                ],
+                "II": [
+                    { name: "Mechanics", icon: "fas fa-weight" },
+                    { name: "Building Materials", icon: "fas fa-cube" },
+                    { name: "Surveying", icon: "fas fa-ruler-combined" }
+                ],
+                "III": [
+                    { name: "RCC", icon: "fas fa-building" },
+                    { name: "Transportation", icon: "fas fa-road" },
+                    { name: "Environmental Engg", icon: "fas fa-leaf" }
+                ],
+                "IV": [
+                    { name: "Design of Structures", icon: "fas fa-drafting-compass" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            },
+            // ME Subjects
+            "ME": {
+                "I": [
+                    { name: "Math-I", icon: "fas fa-calculator" },
+                    { name: "Physics", icon: "fas fa-atom" },
+                    { name: "Engineering Drawing", icon: "fas fa-pencil-ruler" }
+                ],
+                "II": [
+                    { name: "Mechanics", icon: "fas fa-weight" },
+                    { name: "Thermodynamics", icon: "fas fa-fire" },
+                    { name: "Material Science", icon: "fas fa-cubes" }
+                ],
+                "III": [
+                    { name: "Machine Design", icon: "fas fa-cogs" },
+                    { name: "Heat Transfer", icon: "fas fa-fire" },
+                    { name: "CAD/CAM", icon: "fas fa-laptop" }
+                ],
+                "IV": [
+                    { name: "IC Engines", icon: "fas fa-car" },
+                    { name: "Robotics", icon: "fas fa-robot" },
+                    { name: "Project", icon: "fas fa-project-diagram" }
+                ]
+            }
+        };
+        
+        // Create particles background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
             
-            if (savedTheme === 'dark') {
-                body.classList.add('dark-mode');
-                icon.classList.replace('fa-moon', 'fa-sun');
-            } else if (savedTheme === 'light') {
-                body.classList.remove('dark-mode');
-                icon.classList.replace('fa-sun', 'fa-moon');
-            } else {
-                // Automatic theme based on time (6PM to 6AM is dark)
-                if (currentHour >= 18 || currentHour < 6) {
-                    body.classList.add('dark-mode');
-                    icon.classList.replace('fa-moon', 'fa-sun');
-                } else {
-                    body.classList.remove('dark-mode');
-                    icon.classList.replace('fa-sun', 'fa-moon');
-                }
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 15 + 5;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 15;
+                const duration = Math.random() * 10 + 15;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                particlesContainer.appendChild(particle);
             }
         }
         
-        // Toggle theme manually
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
+        // Show notification
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
             
-            if (body.classList.contains('dark-mode')) {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
+            text.textContent = message;
+            
+            // Update icon based on success/error
+            const icon = notification.querySelector('i');
+            if (isSuccess) {
+                icon.className = 'fas fa-check-circle';
+                notification.classList.remove('error');
+                notification.classList.add('success');
             } else {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
+                icon.className = 'fas fa-exclamation-circle';
+                notification.classList.remove('success');
+                notification.classList.add('error');
             }
-        });
-        
-        // Initialize theme on page load
-        document.addEventListener('DOMContentLoaded', initTheme);
-        
-        // Check time periodically to update theme
-        setInterval(initTheme, 60000); // Check every minute
-        
-        // Floating animation enhancements
-        const floatingElements = document.querySelectorAll('.floating');
-        floatingElements.forEach((el, index) => {
-            // Randomize animation delay
-            el.style.animationDelay = `${Math.random() * 5}s`;
             
-            // Add different colors
-            const colors = [
-                'rgba(255, 182, 193, 0.1)',
-                'rgba(173, 216, 230, 0.1)',
-                'rgba(152, 251, 152, 0.1)',
-                'rgba(221, 160, 221, 0.1)'
-            ];
-            el.style.background = colors[index % colors.length];
-        });
-        
-        // Video play button interaction
-        const playButton = document.querySelector('.play-button');
-        playButton.addEventListener('click', () => {
-            playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            notification.classList.add('show');
+            
             setTimeout(() => {
-                playButton.innerHTML = '<i class="fas fa-play"></i>';
-                alert('Video playback would start here. This is a design demonstration.');
-            }, 1500);
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Tab switching
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const forms = document.querySelectorAll('.form-container');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all buttons and forms
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    forms.forEach(form => form.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+                    
+                    // Show corresponding form
+                    const tabName = btn.getAttribute('data-tab');
+                    document.getElementById(`${tabName}-form`).classList.add('active');
+                });
+            });
+        }
+        
+        // User management functions
+        function getUsers() {
+            const users = localStorage.getItem('NotifyUsers');
+            return users ? JSON.parse(users) : [];
+        }
+        
+        function saveUsers(users) {
+            localStorage.setItem('NotifyUsers', JSON.stringify(users));
+        }
+        
+        function registerUser(username, email, year, department, section, password) {
+            const users = getUsers();
+            
+            // Check if user already exists
+            if (users.some(user => user.username === username)) {
+                return { success: false, message: 'Username already exists' };
+            }
+            
+            // Check if email already exists
+            if (users.some(user => user.email === email)) {
+                return { success: false, message: 'Email already registered' };
+            }
+            
+            // Create new user
+            const newUser = {
+                id: Date.now().toString(),
+                username,
+                email,
+                year,
+                department,
+                section,
+                password,
+                joined: new Date().toISOString(),
+                isAdmin: false,
+                lastLogin: Date.now(),
+                preferences: {
+                    darkMode: false,
+                    notifications: true,
+                    answerLength: 4
+                },
+                aiChatHistory: [],
+                notes: [],
+                subjectFiles: {
+                    math: [],
+                    physics: [],
+                    chemistry: [],
+                    biology: [],
+                    computer: [],
+                    english: []
+                }
+            };
+            
+            users.push(newUser);
+            saveUsers(users);
+            
+            return { success: true, user: newUser };
+        }
+        
+        function authenticateUser(username, password) {
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (!user) {
+                return { success: false, message: 'Invalid username or password' };
+            }
+            
+            // Update last login time
+            user.lastLogin = Date.now();
+            const userIndex = users.findIndex(u => u.id === user.id);
+            users[userIndex] = user;
+            saveUsers(users);
+            
+            return { success: true, user };
+        }
+        
+        // Check if user session is valid (24 hours)
+        function isSessionValid() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return false;
+            
+            const users = getUsers();
+            const user = users.find(u => u.id === currentUser.id);
+            
+            if (!user) return false;
+            
+            // Check if last login was within 24 hours (86400000 ms)
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            return (Date.now() - user.lastLogin) < twentyFourHours;
+        }
+        
+        // Forgot password functionality
+        function setupForgotPassword() {
+            const forgotLink = document.getElementById('forgot-password-link');
+            const sendResetBtn = document.getElementById('send-reset-btn');
+            const resetPasswordBtn = document.getElementById('reset-password-btn');
+            const backToLoginLinks = document.querySelectorAll('.back-to-login');
+            
+            // Forgot password link
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('forgot-form').classList.add('active');
+            });
+            
+            // Back to login links
+            backToLoginLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                    document.getElementById('login-form').classList.add('active');
+                });
+            });
+            
+            // Send reset link
+            sendResetBtn.addEventListener('click', function() {
+                const email = document.getElementById('forgot-email').value.trim();
+                
+                if (!email) {
+                    showNotification('Please enter your email', false);
+                    return;
+                }
+                
+                const users = getUsers();
+                const user = users.find(u => u.email === email);
+                
+                if (!user) {
+                    showNotification('No account found with that email', false);
+                    return;
+                }
+                
+                // Generate reset token (simple for demo, in real app use a secure method)
+                const resetToken = Math.random().toString(36).substr(2, 15);
+                
+                // Store token in user object
+                user.resetToken = resetToken;
+                user.resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+                
+                // Update user in storage
+                const userIndex = users.findIndex(u => u.id === user.id);
+                users[userIndex] = user;
+                saveUsers(users);
+                
+                // Show success message with token (in real app, send email)
+                showNotification(`Password reset link sent to ${email}. Token: ${resetToken}`);
+                
+                // Switch to reset form
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('reset-form').classList.add('active');
+            });
+            
+            // Reset password
+            resetPasswordBtn.addEventListener('click', function() {
+                const newPassword = document.getElementById('reset-password').value;
+                const confirmPassword = document.getElementById('reset-confirm-password').value;
+                
+                if (!newPassword || !confirmPassword) {
+                    showNotification('Please fill in all fields', false);
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showNotification('Passwords do not match', false);
+                    return;
+                }
+                
+                // Get token from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                
+                if (!token) {
+                    showNotification('Reset token is missing', false);
+                    return;
+                }
+                
+                const users = getUsers();
+                const user = users.find(u => u.resetToken === token && u.resetTokenExpiry > Date.now());
+                
+                if (!user) {
+                    showNotification('Invalid or expired reset token', false);
+                    return;
+                }
+                
+                // Update password
+                user.password = newPassword;
+                delete user.resetToken;
+                delete user.resetTokenExpiry;
+                
+                // Update user in storage
+                const userIndex = users.findIndex(u => u.id === user.id);
+                users[userIndex] = user;
+                saveUsers(users);
+                
+                // Show success message
+                showNotification('Password reset successfully!');
+                
+                // Clear form
+                document.getElementById('reset-password').value = '';
+                document.getElementById('reset-confirm-password').value = '';
+                
+                // Switch to login form
+                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
+                document.getElementById('login-form').classList.add('active');
+            });
+        }
+        
+        // Login functionality
+        function setupLogin() {
+            const loginBtn = document.getElementById('login-btn');
+            const registerBtn = document.getElementById('register-btn');
+            
+            loginBtn.addEventListener('click', () => {
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                
+                if (!username || !password) {
+                    showNotification('Please fill in all fields', false);
+                    return;
+                }
+                
+                const authResult = authenticateUser(username, password);
+                
+                if (authResult.success) {
+                    const user = authResult.user;
+                    
+                    // Store current user info
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    // Show dashboard
+                    document.getElementById('auth-section').style.display = 'none';
+                    document.getElementById('dashboard').classList.add('active');
+                    document.getElementById('username-display').textContent = user.username;
+                    document.getElementById('sidebar-username').textContent = user.username;
+                    document.getElementById('sidebar-year').textContent = `${getYearName(user.year)} Year`;
+                    document.getElementById('sidebar-department').textContent = user.department;
+                    
+                    // Update profile info
+                    document.getElementById('profile-username').textContent = user.username;
+                    document.getElementById('profile-email').textContent = user.email;
+                    document.getElementById('profile-year').textContent = `${getYearName(user.year)} Year`;
+                    document.getElementById('profile-department').textContent = user.department;
+                    document.getElementById('profile-section').textContent = user.section;
+                    document.getElementById('profile-joined').textContent = new Date(user.joined).toLocaleDateString();
+                    document.getElementById('profile-lastlogin').textContent = new Date().toLocaleString();
+                    
+                    // Apply user preferences
+                    applyUserPreferences(user);
+                    
+                    // Load groups after login
+                    loadGroups();
+                    
+                    // Load subject cards based on department and year
+                    loadSubjectCards(user.department, user.year);
+                    
+                    // Update department-year display
+                    document.getElementById('department-year-display').textContent = 
+                        `${user.department} - ${getYearName(user.year)} Year`;
+                    
+                    showNotification(`Welcome back, ${user.username}!`);
+                } else {
+                    showNotification(authResult.message, false);
+                }
+            });
+            
+            registerBtn.addEventListener('click', () => {
+                const username = document.getElementById('register-username').value;
+                const email = document.getElementById('register-email').value;
+                const year = document.getElementById('register-year').value;
+                const department = document.getElementById('register-department').value;
+                const section = document.getElementById('register-section').value;
+                const password = document.getElementById('register-password').value;
+                const confirmPassword = document.getElementById('register-confirm-password').value;
+                
+                if (!username || !email || !year || !department || !section || !password || !confirmPassword) {
+                    showNotification('Please fill in all fields', false);
+                    return;
+                }
+                
+                // Validate gmail email
+                if (!email.endsWith('@gmail.com')) {
+                    showNotification('Please use a valid gmail address', false);
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showNotification('Passwords do not match', false);
+                    return;
+                }
+                
+                const registration = registerUser(username, email, year, department, section, password);
+                
+                if (registration.success) {
+                    // Switch to login tab
+                    document.querySelector('.tab-btn[data-tab="login"]').click();
+                    
+                    // Clear form
+                    document.getElementById('register-username').value = '';
+                    document.getElementById('register-email').value = '';
+                    document.getElementById('register-year').value = '';
+                    document.getElementById('register-department').value = '';
+                    document.getElementById('register-section').value = '';
+                    document.getElementById('register-password').value = '';
+                    document.getElementById('register-confirm-password').value = '';
+                    
+                    showNotification('Account created successfully! Please login.');
+                } else {
+                    showNotification(registration.message, false);
+                }
+            });
+        }
+        
+        // Get year name from code
+        function getYearName(yearCode) {
+            switch(yearCode) {
+                case 'I': return 'First';
+                case 'II': return 'Second';
+                case 'III': return 'Third';
+                case 'IV': return 'Fourth';
+                default: return yearCode;
+            }
+        }
+        
+        // Setup sidebar navigation
+        function setupSidebar() {
+            const menuBtns = document.querySelectorAll('.menu-btn[data-page]');
+            
+            menuBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    menuBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Hide all pages
+                    document.querySelectorAll('.dashboard-main, .profile-page, .subject-page, .notes-page, .schedule-page, .settings-page, .groups-page, .group-chat-page').forEach(page => {
+                        page.style.display = 'none';
+                    });
+                    
+                    // Show selected page
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        document.getElementById(pageId).style.display = 'block';
+                    }
+                    
+                    // Load groups when groups page is opened
+                    if (pageId === 'groups-page') {
+                        loadGroups();
+                    }
+                });
+            });
+            
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                location.reload();
+            });
+            
+            // AI Assistant from sidebar
+            document.getElementById('ai-assistant-sidebar').addEventListener('click', function() {
+                document.getElementById('chat-container').style.display = 'block';
+            });
+            
+            // Back buttons
+            document.getElementById('back-to-dashboard').addEventListener('click', backToDashboard);
+            document.getElementById('back-to-groups').addEventListener('click', backToGroups);
+            document.getElementById('back-to-dashboard-notes').addEventListener('click', backToDashboard);
+            document.getElementById('back-to-dashboard-schedule').addEventListener('click', backToDashboard);
+            document.getElementById('back-to-dashboard-settings').addEventListener('click', backToDashboard);
+        }
+        
+        function backToDashboard() {
+            // Hide all pages
+            document.querySelectorAll('.dashboard-main, .profile-page, .subject-page, .notes-page, .schedule-page, .settings-page, .groups-page, .group-chat-page').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Show dashboard main content
+            document.getElementById('dashboard-main').style.display = 'block';
+            
+            // Set dashboard button as active
+            document.querySelector('.menu-btn[data-page="dashboard-main"]').classList.add('active');
+            
+            // Update subject card badges
+            updateSubjectCardBadges();
+        }
+        
+        function backToGroups() {
+            // Hide group chat page
+            document.getElementById('group-chat-page').style.display = 'none';
+            
+            // Show groups page
+            document.getElementById('groups-page').style.display = 'block';
+            
+            // Set groups button as active
+            document.querySelector('.menu-btn[data-page="groups-page"]').classList.add('active');
+        }
+        
+        // Load subject cards based on department and year
+        function loadSubjectCards(department, year) {
+            const container = document.getElementById('subject-cards-container');
+            const aiCard = document.getElementById('ai-assistant-card');
+            
+            // Clear container except for AI card
+            container.innerHTML = '';
+            
+            // Get subjects for this department and year
+            const subjects = departmentSubjects[department]?.[year] || [];
+            
+            // Create subject cards
+            subjects.forEach(subject => {
+                const card = document.createElement('a');
+                card.className = 'subject-card';
+                card.setAttribute('data-subject', subject.name.toLowerCase());
+                card.innerHTML = `
+                    <div class="card-icon">
+                        <i class="${subject.icon}"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>${subject.name}</h3>
+                        <p>Study materials and resources</p>
+                    </div>
+                    <div class="card-badge">0 PDFs</div>
+                `;
+                container.appendChild(card);
+                
+                // Add click event to open subject page
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Hide dashboard main content
+                    document.getElementById('dashboard-main').style.display = 'none';
+                    
+                    // Show subject page
+                    const subjectPage = document.getElementById('subject-page');
+                    subjectPage.classList.add('active');
+                    subjectPage.style.display = 'block';
+                    
+                    // Update subject info
+                    document.getElementById('subject-name').textContent = subject.name;
+                    document.getElementById('subject-icon').className = subject.icon;
+                    
+                    // Clear selected file name display
+                    document.getElementById('selected-file-name').textContent = '';
+                    
+                    // Load subject files
+                    loadSubjectFiles(subject.name.toLowerCase());
+                });
+            });
+            
+            // Add AI card at the end
+            container.appendChild(aiCard);
+            
+            // Update badges
+            updateSubjectCardBadges();
+        }
+        
+        // Setup group creation
+        function setupGroupCreation() {
+            const openModalBtn = document.getElementById('open-create-group-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modal = document.getElementById('create-group-modal');
+            const createGroupBtn = document.getElementById('confirm-create-group');
+            
+            // Open modal
+            openModalBtn.addEventListener('click', () => {
+                modal.classList.add('active');
+                
+                // Populate members list
+                const membersList = document.getElementById('members-list');
+                membersList.innerHTML = '';
+                
+                const users = getUsers();
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                users.forEach(user => {
+                    if (user.id !== currentUser.id) {
+                        const memberItem = document.createElement('div');
+                        memberItem.className = 'member-item';
+                        memberItem.innerHTML = `
+                            <input type="checkbox" id="member-${user.id}" value="${user.id}">
+                            <label for="member-${user.id}">${user.username} (${user.department})</label>
+                        `;
+                        membersList.appendChild(memberItem);
+                    }
+                });
+            });
+            
+            // Close modal
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+            
+            // Create group
+            createGroupBtn.addEventListener('click', () => {
+                const groupName = document.getElementById('group-name').value;
+                if (!groupName) {
+                    showNotification('Please enter a group name', false);
+                    return;
+                }
+                
+                const selectedMembers = [];
+                document.querySelectorAll('#members-list input:checked').forEach(checkbox => {
+                    selectedMembers.push(checkbox.value);
+                });
+                
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                // Create new group
+                const newGroup = {
+                    id: Date.now().toString(),
+                    name: groupName,
+                    creator: currentUser.id,
+                    members: [currentUser.id, ...selectedMembers],
+                    messages: [],
+                    files: [],
+                    created: new Date().toISOString()
+                };
+                
+                // Save group
+                const groups = getGroups();
+                groups.push(newGroup);
+                saveGroups(groups);
+                
+                // Close modal
+                modal.classList.remove('active');
+                
+                // Reload groups
+                loadGroups();
+                
+                showNotification(`Group "${groupName}" created successfully!`);
+            });
+        }
+        
+        // Group management functions
+        function getGroups() {
+            const groups = localStorage.getItem('NotifyGroups');
+            return groups ? JSON.parse(groups) : [];
+        }
+        
+        function saveGroups(groups) {
+            localStorage.setItem('NotifyGroups', JSON.stringify(groups));
+        }
+        
+        function loadGroups() {
+            const groups = getGroups();
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const groupsContainer = document.getElementById('groups-container');
+            
+            groupsContainer.innerHTML = '';
+            
+            if (groups.length === 0) {
+                groupsContainer.innerHTML = '<p>No groups available. Create one to get started!</p>';
+                return;
+            }
+            
+            groups.forEach(group => {
+                // Only show groups that current user is member of
+                if (group.members.includes(currentUser.id)) {
+                    const groupCard = document.createElement('div');
+                    groupCard.className = 'group-card';
+                    groupCard.setAttribute('data-group-id', group.id);
+                    groupCard.innerHTML = `
+                        <div class="group-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>${group.name}</h3>
+                        <p>Group for collaborative studying</p>
+                        
+                        <div class="group-members">
+                            ${getMemberTags(group.members)}
+                        </div>
+                        
+                        <div class="group-stats">
+                            <span><i class="fas fa-comment"></i> ${group.messages?.length || 0} messages</span>
+                            <span><i class="fas fa-file"></i> ${group.files?.length || 0} files</span>
+                        </div>
+                    `;
+                    groupsContainer.appendChild(groupCard);
+                    
+                    // Add click event to open group chat
+                    groupCard.addEventListener('click', () => {
+                        openGroupChat(group.id);
+                    });
+                }
+            });
+        }
+        
+        function getMemberTags(memberIds) {
+            const users = getUsers();
+            const tags = [];
+            
+            // Show first 3 members + count of others
+            for (let i = 0; i < Math.min(3, memberIds.length); i++) {
+                const user = users.find(u => u.id === memberIds[i]);
+                if (user) {
+                    tags.push(`<span class="member-tag">${user.username}</span>`);
+                }
+            }
+            
+            if (memberIds.length > 3) {
+                tags.push(`<span class="member-tag">+${memberIds.length - 3} more</span>`);
+            }
+            
+            return tags.join('');
+        }
+        
+        function openGroupChat(groupId) {
+            const groups = getGroups();
+            const group = groups.find(g => g.id === groupId);
+            
+            if (!group) return;
+            
+            // Hide groups page
+            document.getElementById('groups-page').style.display = 'none';
+            
+            // Show group chat page
+            const groupChatPage = document.getElementById('group-chat-page');
+            groupChatPage.style.display = 'block';
+            groupChatPage.setAttribute('data-group-id', groupId);
+            
+            // Set group info
+            document.getElementById('group-chat-name').textContent = group.name;
+            document.getElementById('group-chat-members').textContent = getMemberNames(group.members);
+            
+            // Load group messages
+            loadGroupMessages(group);
+        }
+        
+        function getMemberNames(memberIds) {
+            const users = getUsers();
+            return memberIds.map(id => {
+                const user = users.find(u => u.id === id);
+                return user ? user.username : '';
+            }).filter(name => name).join(', ');
+        }
+        
+        function loadGroupMessages(group) {
+            const chatBody = document.getElementById('group-chat-body');
+            chatBody.innerHTML = '';
+            
+            if (!group.messages || group.messages.length === 0) {
+                chatBody.innerHTML = '<p>No messages yet. Start the conversation!</p>';
+                return;
+            }
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            group.messages.forEach(message => {
+                const user = getUsers().find(u => u.id === message.sender);
+                if (user) {
+                    const messageDiv = document.createElement('div');
+                    
+                    // Determine message class based on sender
+                    if (message.sender === currentUser.id) {
+                        messageDiv.className = 'message user-message';
+                    } else {
+                        messageDiv.className = 'message received-message';
+                    }
+                    
+                    // Check if message is a file
+                    if (message.isFile) {
+                        messageDiv.innerHTML = `
+                            <strong>${user.username}:</strong> 
+                            <div style="margin-top: 5px;">
+                                <i class="fas fa-file" style="margin-right: 8px;"></i>
+                                <a href="#" class="file-download-link">${message.fileName}</a>
+                            </div>
+                        `;
+                    } else {
+                        messageDiv.innerHTML = `<strong>${user.username}:</strong> ${message.text}`;
+                    }
+                    
+                    chatBody.appendChild(messageDiv);
+                }
+            });
+            
+            // Scroll to bottom
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        // Setup group chat functionality
+        function setupGroupChat() {
+            const groupSendBtn = document.getElementById('group-send-btn');
+            const groupChatInput = document.getElementById('group-chat-input');
+            const groupAttachBtn = document.getElementById('group-attach-btn');
+            const groupFileUpload = document.getElementById('group-file-upload');
+            
+            groupSendBtn.addEventListener('click', sendGroupMessage);
+            groupChatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendGroupMessage();
+            });
+            
+            // Setup file attachment
+            groupAttachBtn.addEventListener('click', () => {
+                groupFileUpload.click();
+            });
+            
+            groupFileUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Create a file message
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const groupId = document.getElementById('group-chat-page').getAttribute('data-group-id');
+                if (!groupId) return;
+                
+                const groups = getGroups();
+                const groupIndex = groups.findIndex(g => g.id === groupId);
+                if (groupIndex === -1) return;
+                
+                // Create file message object
+                const message = {
+                    sender: currentUser.id,
+                    isFile: true,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: formatFileSize(file.size),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Add to group's messages
+                if (!groups[groupIndex].messages) {
+                    groups[groupIndex].messages = [];
+                }
+                groups[groupIndex].messages.push(message);
+                
+                // Save groups
+                saveGroups(groups);
+                
+                // Add message to chat
+                const chatBody = document.getElementById('group-chat-body');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `
+                    <strong>${currentUser.username}:</strong> 
+                    <div style="margin-top: 5px;">
+                        <i class="fas fa-file" style="margin-right: 8px;"></i>
+                        <a href="#" class="file-download-link">${file.name}</a>
+                    </div>
+                `;
+                chatBody.appendChild(messageDiv);
+                
+                // Clear file input
+                groupFileUpload.value = '';
+                
+                // Scroll to bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
+                
+                showNotification(`File "${file.name}" attached!`);
+            });
+            
+            function sendGroupMessage() {
+                const messageText = groupChatInput.value.trim();
+                if (!messageText) return;
+                
+                const groupId = document.getElementById('group-chat-page').getAttribute('data-group-id');
+                if (!groupId) return;
+                
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                const groups = getGroups();
+                const groupIndex = groups.findIndex(g => g.id === groupId);
+                if (groupIndex === -1) return;
+                
+                // Create message object
+                const message = {
+                    sender: currentUser.id,
+                    text: messageText,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Add to group's messages
+                if (!groups[groupIndex].messages) {
+                    groups[groupIndex].messages = [];
+                }
+                groups[groupIndex].messages.push(message);
+                
+                // Save groups
+                saveGroups(groups);
+                
+                // Add message to chat
+                const chatBody = document.getElementById('group-chat-body');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `<strong>${currentUser.username}:</strong> ${messageText}`;
+                chatBody.appendChild(messageDiv);
+                
+                // Clear input
+                groupChatInput.value = '';
+                
+                // Scroll to bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+        
+        // Setup file upload functionality
+        function setupFileUploads() {
+            // Subject file upload
+            const uploadBtn = document.getElementById('upload-btn');
+            const fileUpload = document.getElementById('file-upload');
+            
+            uploadBtn.addEventListener('click', () => {
+                fileUpload.click();
+            });
+            
+            fileUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Show the file name in the upload area
+                document.getElementById('selected-file-name').textContent = `Selected: ${file.name}`;
+                
+                // Save to user's subject files
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) return;
+                
+                const subject = document.getElementById('subject-name').textContent.toLowerCase();
+                
+                if (!currentUser.subjectFiles) {
+                    currentUser.subjectFiles = {};
+                }
+                
+                if (!currentUser.subjectFiles[subject]) {
+                    currentUser.subjectFiles[subject] = [];
+                }
+                
+                const newFile = {
+                    id: Date.now().toString(),
+                    name: file.name,
+                    type: file.type,
+                    size: formatFileSize(file.size),
+                    uploadedAt: new Date().toISOString()
+                };
+                
+                currentUser.subjectFiles[subject].push(newFile);
+                
+                // Update user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update users in storage
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    saveUsers(users);
+                }
+                
+                // Update subject files display
+                loadSubjectFiles(subject);
+                
+                // Update card badge
+                updateSubjectCardBadges();
+                
+                showNotification(`File "${file.name}" saved successfully!`);
+            });
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Load subject files
+        function loadSubjectFiles(subject) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            const filesContainer = document.getElementById('subject-files');
+            filesContainer.innerHTML = '';
+            
+            if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject] || currentUser.subjectFiles[subject].length === 0) {
+                filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
+                return;
+            }
+            
+            currentUser.subjectFiles[subject].forEach(file => {
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                fileCard.innerHTML = `
+                    <div class="file-icon">
+                        <i class="${getFileIcon(file.type)}"></i>
+                    </div>
+                    <div class="file-content">
+                        <h4>${file.name}</h4>
+                        <div class="file-meta">
+                            <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
+                            <span>${file.size}</span>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-action download">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="file-action delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                filesContainer.appendChild(fileCard);
+            });
+        }
+        
+        // Get file icon based on file type
+        function getFileIcon(fileType) {
+            if (fileType.includes('pdf')) return 'fas fa-file-pdf';
+            if (fileType.includes('word')) return 'fas fa-file-word';
+            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fas fa-file-powerpoint';
+            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel';
+            return 'fas fa-file';
+        }
+        
+        // Update subject card badges
+        function updateSubjectCardBadges() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || !currentUser.subjectFiles) return;
+            
+            const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
+            subjectCards.forEach(card => {
+                const subject = card.getAttribute('data-subject');
+                const badge = card.querySelector('.card-badge');
+                if (currentUser.subjectFiles[subject] && currentUser.subjectFiles[subject].length > 0) {
+                    const count = currentUser.subjectFiles[subject].length;
+                    badge.textContent = `${count} PDF${count !== 1 ? 's' : ''}`;
+                } else {
+                    badge.textContent = '0 PDFs';
+                }
+            });
+        }
+        
+        // Setup password change functionality
+        function setupPasswordChange() {
+            const changePasswordBtn = document.getElementById('change-password-btn');
+            
+            changePasswordBtn.addEventListener('click', () => {
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-new-password').value;
+                
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showNotification('Please fill in all fields', false);
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showNotification('New passwords do not match', false);
+                    return;
+                }
+                
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                
+                if (userIndex === -1) {
+                    showNotification('User not found', false);
+                    return;
+                }
+                
+                if (users[userIndex].password !== currentPassword) {
+                    showNotification('Current password is incorrect', false);
+                    return;
+                }
+                
+                // Update password
+                users[userIndex].password = newPassword;
+                saveUsers(users);
+                
+                // Update current user in localStorage
+                currentUser.password = newPassword;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Clear form
+                document.getElementById('current-password').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-new-password').value = '';
+                
+                showNotification('Password changed successfully!');
+            });
+        }
+        
+        // Setup theme toggle functionality
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeStatus = document.getElementById('theme-status');
+            
+            themeToggle.addEventListener('click', () => {
+                const isActive = themeToggle.classList.toggle('active');
+                document.body.classList.toggle('dark-theme');
+                themeStatus.textContent = isActive ? 'On' : 'Off';
+                
+                // Save preference to user
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser) {
+                    const users = getUsers();
+                    const userIndex = users.findIndex(u => u.id === currentUser.id);
+                    if (userIndex !== -1) {
+                        users[userIndex].preferences.darkMode = isActive;
+                        saveUsers(users);
+                        currentUser.preferences.darkMode = isActive;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                }
+            });
+        }
+        
+        // Setup notifications toggle functionality
+        function setupNotificationsToggle() {
+            const notificationsToggle = document.getElementById('notifications-toggle');
+            const notificationsStatus = document.getElementById('notifications-status');
+            
+            notificationsToggle.addEventListener('click', () => {
+                const isActive = notificationsToggle.classList.toggle('active');
+                notificationsStatus.textContent = isActive ? 'On' : 'Off';
+                
+                // Save preference to user
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser) {
+                    const users = getUsers();
+                    const userIndex = users.findIndex(u => u.id === currentUser.id);
+                    if (userIndex !== -1) {
+                        users[userIndex].preferences.notifications = isActive;
+                        saveUsers(users);
+                        currentUser.preferences.notifications = isActive;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                }
+            });
+        }
+        
+        // Apply user preferences on login
+        function applyUserPreferences(user) {
+            // Apply theme
+            if (user.preferences && user.preferences.darkMode) {
+                document.getElementById('theme-toggle').classList.add('active');
+                document.body.classList.add('dark-theme');
+                document.getElementById('theme-status').textContent = 'On';
+            }
+            
+            // Apply notifications preference
+            if (user.preferences && user.preferences.notifications) {
+                document.getElementById('notifications-toggle').classList.add('active');
+                document.getElementById('notifications-status').textContent = 'On';
+            }
+            
+            // Apply answer length preference
+            if (user.preferences && user.preferences.answerLength) {
+                document.getElementById('answer-length').value = user.preferences.answerLength;
+            }
+        }
+        
+        // AI Assistant
+        async function setupAIAssistant() {
+            const aiCard = document.getElementById('ai-assistant-card');
+            const chatContainer = document.getElementById('chat-container');
+            const closeChat = document.getElementById('close-chat');
+            const chatBody = document.getElementById('chat-body');
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            const marksBtn = document.getElementById('marks-btn');
+            const marksMenu = document.getElementById('marks-menu');
+            let selectedMarks = 4;
+            
+            // Open chat
+            aiCard.addEventListener('click', () => {
+                chatContainer.style.display = 'block';
+                
+                // Load chat history
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser && currentUser.aiChatHistory && currentUser.aiChatHistory.length > 0) {
+                    chatBody.innerHTML = '';
+                    currentUser.aiChatHistory.forEach(msg => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        messageDiv.classList.add(`${msg.role === 'user' ? 'user-message' : 'bot-message'}`);
+                        messageDiv.textContent = msg.content;
+                        chatBody.appendChild(messageDiv);
+                    });
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+            });
+            
+            // Close chat
+            closeChat.addEventListener('click', () => {
+                chatContainer.style.display = 'none';
+            });
+            
+            // Toggle marks dropdown
+            marksBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                marksMenu.classList.toggle('show');
+            });
+            
+            // Close marks dropdown when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!marksBtn.contains(e.target)) {
+                    marksMenu.classList.remove('show');
+                }
+            });
+            
+            // Select marks option
+            document.querySelectorAll('.marks-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    selectedMarks = parseInt(option.getAttribute('data-marks'));
+                    marksBtn.innerHTML = `${selectedMarks}M <i class="fas fa-chevron-down"></i>`;
+                    marksMenu.classList.remove('show');
+                });
+            });
+            
+            // Send message
+            async function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.value = '';
+                
+                try {
+                    // Generate prompt based on selected marks
+                    let prompt = `Provide a concise answer to the following question in about ${selectedMarks*30} words: ${message}`;
+                    
+                    // Call Gemini API
+                    const response = await callGeminiAPI(prompt);
+                    
+                    // Add AI response
+                    addMessage(response, 'bot');
+                    
+                    // Save chat history to user profile
+                    saveChatHistory(message, response);
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    addMessage("I'm having trouble generating a response. Please try again later.", 'bot');
+                }
+            }
+            
+            // Add message to chat
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(`${sender}-message`);
+                messageDiv.textContent = text;
+                
+                chatBody.appendChild(messageDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            
+            // Save chat history to user profile
+            function saveChatHistory(userMessage, botResponse) {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) return;
+                
+                if (!currentUser.aiChatHistory) {
+                    currentUser.aiChatHistory = [];
+                }
+                
+                // Add user message
+                currentUser.aiChatHistory.push({
+                    role: 'user',
+                    content: userMessage,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Add bot response
+                currentUser.aiChatHistory.push({
+                    role: 'bot',
+                    content: botResponse,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Update current user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update users in storage
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    saveUsers(users);
+                }
+            }
+            
+            // Call Gemini API
+            async function callGeminiAPI(prompt) {
+                const apiKey = GEMINI_API_KEY;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const requestBody = {
+                    contents: [
+                        {
+                            parts: [
+                                { text: prompt }
+                            ]
+                        }
+                    ]
+                };
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Extract the text from the response
+                    const text = data.candidates[0].content.parts[0].text;
+                    return text;
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    return "I'm having trouble generating a response. Please try again later.";
+                }
+            }
+            
+            // Event listeners
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            setupTabs();
+            setupLogin();
+            setupSidebar();
+            setupGroupCreation();
+            setupGroupChat();
+            setupAIAssistant();
+            setupFileUploads();
+            setupPasswordChange();
+            setupThemeToggle();
+            setupNotificationsToggle();
+            setupForgotPassword();
+            
+            // Check if session is valid
+            if (isSessionValid()) {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                // Show dashboard
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                document.getElementById('username-display').textContent = currentUser.username;
+                document.getElementById('sidebar-username').textContent = currentUser.username;
+                document.getElementById('sidebar-year').textContent = `${getYearName(currentUser.year)} Year`;
+                document.getElementById('sidebar-department').textContent = currentUser.department;
+                
+                // Update profile info
+                document.getElementById('profile-username').textContent = currentUser.username;
+                document.getElementById('profile-email').textContent = currentUser.email;
+                document.getElementById('profile-year').textContent = `${getYearName(currentUser.year)} Year`;
+                document.getElementById('profile-department').textContent = currentUser.department;
+                document.getElementById('profile-section').textContent = currentUser.section;
+                document.getElementById('profile-joined').textContent = new Date(currentUser.joined).toLocaleDateString();
+                document.getElementById('profile-lastlogin').textContent = new Date().toLocaleString();
+                
+                // Apply user preferences
+                applyUserPreferences(currentUser);
+                
+                // Load groups after login
+                loadGroups();
+                
+                // Load subject cards based on department and year
+                loadSubjectCards(currentUser.department, currentUser.year);
+                
+                // Update department-year display
+                document.getElementById('department-year-display').textContent = 
+                    `${currentUser.department} - ${getYearName(currentUser.year)} Year`;
+                
+                showNotification(`Welcome back, ${currentUser.username}!`);
+            }
+            
+            // Add sample users for demo
+            if (getUsers().length === 0) {
+                const users = [
+                    {
+                        id: '1',
+                        username: 'student',
+                        email: 'student@gmail.com',
+                        year: 'II',
+                        department: 'CSE',
+                        section: 'A',
+                        password: 'password',
+                        joined: new Date().toISOString(),
+                        isAdmin: false,
+                        lastLogin: Date.now(),
+                        preferences: {
+                            darkMode: false,
+                            notifications: true,
+                            answerLength: 4
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
+                    },
+                    {
+                        id: '2',
+                        username: 'admin',
+                        email: 'admin@gmail.com',
+                        year: 'IV',
+                        department: 'CS-DS',
+                        section: 'B',
+                        password: 'password',
+                        joined: new Date().toISOString(),
+                        isAdmin: true,
+                        lastLogin: Date.now(),
+                        preferences: {
+                            darkMode: false,
+                            notifications: true,
+                            answerLength: 4
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
+                    },
+                    {
+                        id: '3',
+                        username: 'jane',
+                        email: 'jane@gmail.com',
+                        year: 'II',
+                        department: 'CSE',
+                        section: 'A',
+                        password: 'password',
+                        joined: new Date().toISOString(),
+                        isAdmin: false,
+                        lastLogin: Date.now(),
+                        preferences: {
+                            darkMode: false,
+                            notifications: true,
+                            answerLength: 4
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
+                    },
+                    {
+                        id: '4',
+                        username: 'mike',
+                        email: 'mike@gmail.com',
+                        year: 'III',
+                        department: 'AIML',
+                        section: 'C',
+                        password: 'password',
+                        joined: new Date().toISOString(),
+                        isAdmin: false,
+                        lastLogin: Date.now(),
+                        preferences: {
+                            darkMode: false,
+                            notifications: true,
+                            answerLength: 4
+                        },
+                        aiChatHistory: [],
+                        notes: [],
+                        subjectFiles: {
+                            math: [],
+                            physics: [],
+                            chemistry: [],
+                            biology: [],
+                            computer: [],
+                            english: []
+                        }
+                    }
+                ];
+                saveUsers(users);
+            }
+            
+            // Add sample groups for demo
+            if (getGroups().length === 0) {
+                const groups = [
+                    {
+                        id: '1',
+                        name: 'Computer Science Study Group',
+                        creator: '1',
+                        members: ['1', '2', '3'],
+                        messages: [
+                            { sender: '1', text: 'Hey everyone! Let\'s share some useful resources for the upcoming exam.' },
+                            { sender: '3', text: 'I found this great PDF with practice questions. I\'ll upload it to the group.' },
+                            { sender: '2', text: 'Thanks Jane! Does anyone want to meet tomorrow to go over chapter 5?' }
+                        ],
+                        files: [],
+                        created: new Date().toISOString()
+                    },
+                    {
+                        id: '2',
+                        name: 'Mathematics Study Group',
+                        creator: '1',
+                        members: ['1', '4'],
+                        messages: [
+                            { sender: '1', text: 'Can someone help me with calculus problem set #3?' },
+                            { sender: '4', text: 'Sure, I can help. Which problems are you stuck on?' }
+                        ],
+                        files: [],
+                        created: new Date().toISOString()
+                    }
+                ];
+                saveGroups(groups);
+            }
         });
     </script>
 </body>
