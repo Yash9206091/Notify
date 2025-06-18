@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.1-0/firebase.js"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -2314,6 +2315,25 @@
         // API Key for Gemini
         const GEMINI_API_KEY = 'AIzaSyBeYmFQLyhoTy0KnDBqbNRL-ir7hdpVglg';
         
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgRg2Ey2LfIEMYiBImTMoS77pJSa-EzUo",
+            authDomain: "employee-performance-sys-2d3f4.firebaseapp.com",
+            databaseURL: "https://employee-performance-sys-2d3f4-default-rtdb.firebaseio.com",
+            projectId: "employee-performance-sys-2d3f4",
+            storageBucket: "employee-performance-sys-2d3f4.firebasestorage.app",
+            messagingSenderId: "1005685009699",
+            appId: "1:1005685009699:web:a37c70406b7f3182d9b096",
+            measurementId: "G-8Z6R083573"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Reference to your database
+        const database = firebase.database();
+        const usersRef = database.ref("users");
+        
         // Department and year subject mapping
         const departmentSubjects = {
             // CS-DS Subjects
@@ -2623,79 +2643,93 @@
             });
         }
         
-        // User management functions
-        function getUsers() {
-            const users = localStorage.getItem('NotifyUsers');
-            return users ? JSON.parse(users) : [];
-        }
-        
-        function saveUsers(users) {
-            localStorage.setItem('NotifyUsers', JSON.stringify(users));
-        }
-        
+        // Register user with Firebase
         function registerUser(username, email, year, department, section, password) {
-            const users = getUsers();
-            
-            // Check if user already exists
-            if (users.some(user => user.username === username)) {
-                return { success: false, message: 'Username already exists' };
-            }
-            
-            // Check if email already exists
-            if (users.some(user => user.email === email)) {
-                return { success: false, message: 'Email already registered' };
-            }
-            
-            // Create new user
-            const newUser = {
-                id: Date.now().toString(),
-                username,
-                email,
-                year,
-                department,
-                section,
-                password,
-                joined: new Date().toISOString(),
-                isAdmin: false,
-                lastLogin: Date.now(),
-                preferences: {
-                    darkMode: false,
-                    notifications: true,
-                    answerLength: 4
-                },
-                aiChatHistory: [],
-                notes: [],
-                subjectFiles: {
-                    math: [],
-                    physics: [],
-                    chemistry: [],
-                    biology: [],
-                    computer: [],
-                    english: []
-                }
-            };
-            
-            users.push(newUser);
-            saveUsers(users);
-            
-            return { success: true, user: newUser };
+            return new Promise((resolve, reject) => {
+                // Check if username already exists
+                usersRef.orderByChild("username").equalTo(username).once("value", snapshot => {
+                    if (snapshot.exists()) {
+                        resolve({ success: false, message: 'Username already exists' });
+                    } else {
+                        // Check if email already exists
+                        usersRef.orderByChild("email").equalTo(email).once("value", snapshot => {
+                            if (snapshot.exists()) {
+                                resolve({ success: false, message: 'Email already registered' });
+                            } else {
+                                // Create new user
+                                const newUserRef = usersRef.push();
+                                const newUser = {
+                                    id: newUserRef.key,
+                                    username,
+                                    email,
+                                    year,
+                                    department,
+                                    section,
+                                    password,
+                                    joined: new Date().toISOString(),
+                                    isAdmin: false,
+                                    lastLogin: Date.now(),
+                                    preferences: {
+                                        darkMode: false,
+                                        notifications: true,
+                                        answerLength: 4
+                                    },
+                                    aiChatHistory: [],
+                                    notes: [],
+                                    subjectFiles: {
+                                        math: [],
+                                        physics: [],
+                                        chemistry: [],
+                                        biology: [],
+                                        computer: [],
+                                        english: []
+                                    }
+                                };
+
+                                newUserRef.set(newUser)
+                                    .then(() => resolve({ success: true, user: newUser }))
+                                    .catch(error => reject({ success: false, message: error.message }));
+                            }
+                        });
+                    }
+                });
+            });
         }
         
+        // Authenticate user with Firebase
         function authenticateUser(username, password) {
-            const users = getUsers();
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (!user) {
-                return { success: false, message: 'Invalid username or password' };
-            }
-            
-            // Update last login time
-            user.lastLogin = Date.now();
-            const userIndex = users.findIndex(u => u.id === user.id);
-            users[userIndex] = user;
-            saveUsers(users);
-            
-            return { success: true, user };
+            return new Promise((resolve, reject) => {
+                usersRef.orderByChild("username").equalTo(username).once("value", snapshot => {
+                    if (snapshot.exists()) {
+                        let userFound = false;
+                        snapshot.forEach(childSnapshot => {
+                            const user = childSnapshot.val();
+                            if (user.password === password) {
+                                userFound = true;
+                                // Update last login time in Firebase
+                                usersRef.child(childSnapshot.key).update({ lastLogin: Date.now() })
+                                    .then(() => {
+                                        // Return the user without password for security
+                                        const userWithoutPassword = { ...user };
+                                        delete userWithoutPassword.password;
+                                        
+                                        resolve({ 
+                                            success: true, 
+                                            user: userWithoutPassword,
+                                            userId: childSnapshot.key
+                                        });
+                                    })
+                                    .catch(error => reject({ success: false, message: error.message }));
+                            }
+                        });
+                        if (!userFound) {
+                            resolve({ success: false, message: 'Invalid password' });
+                        }
+                    } else {
+                        resolve({ success: false, message: 'User not found' });
+                    }
+                });
+            });
         }
         
         // Check if user session is valid (24 hours)
@@ -2703,14 +2737,9 @@
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (!currentUser) return false;
             
-            const users = getUsers();
-            const user = users.find(u => u.id === currentUser.id);
-            
-            if (!user) return false;
-            
             // Check if last login was within 24 hours (86400000 ms)
             const twentyFourHours = 24 * 60 * 60 * 1000;
-            return (Date.now() - user.lastLogin) < twentyFourHours;
+            return (Date.now() - currentUser.lastLogin) < twentyFourHours;
         }
         
         // Forgot password functionality
@@ -2745,32 +2774,8 @@
                     return;
                 }
                 
-                const users = getUsers();
-                const user = users.find(u => u.email === email);
-                
-                if (!user) {
-                    showNotification('No account found with that email', false);
-                    return;
-                }
-                
-                // Generate reset token (simple for demo, in real app use a secure method)
-                const resetToken = Math.random().toString(36).substr(2, 15);
-                
-                // Store token in user object
-                user.resetToken = resetToken;
-                user.resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
-                
-                // Update user in storage
-                const userIndex = users.findIndex(u => u.id === user.id);
-                users[userIndex] = user;
-                saveUsers(users);
-                
-                // Show success message with token (in real app, send email)
-                showNotification(`Password reset link sent to ${email}. Token: ${resetToken}`);
-                
-                // Switch to reset form
-                document.querySelectorAll('.form-container').forEach(form => form.classList.remove('active'));
-                document.getElementById('reset-form').classList.add('active');
+                // For demo purposes, just show a message
+                showNotification(`Password reset link would be sent to ${email} in a real application`);
             });
             
             // Reset password
@@ -2784,38 +2789,11 @@
                 }
                 
                 if (newPassword !== confirmPassword) {
-                    showNotification('Passwords do not match', false);
+                    showNotification('New passwords do not match', false);
                     return;
                 }
                 
-                // Get token from URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token');
-                
-                if (!token) {
-                    showNotification('Reset token is missing', false);
-                    return;
-                }
-                
-                const users = getUsers();
-                const user = users.find(u => u.resetToken === token && u.resetTokenExpiry > Date.now());
-                
-                if (!user) {
-                    showNotification('Invalid or expired reset token', false);
-                    return;
-                }
-                
-                // Update password
-                user.password = newPassword;
-                delete user.resetToken;
-                delete user.resetTokenExpiry;
-                
-                // Update user in storage
-                const userIndex = users.findIndex(u => u.id === user.id);
-                users[userIndex] = user;
-                saveUsers(users);
-                
-                // Show success message
+                // For demo purposes, just show a message
                 showNotification('Password reset successfully!');
                 
                 // Clear form
@@ -2842,48 +2820,52 @@
                     return;
                 }
                 
-                const authResult = authenticateUser(username, password);
-                
-                if (authResult.success) {
-                    const user = authResult.user;
-                    
-                    // Store current user info
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                    
-                    // Show dashboard
-                    document.getElementById('auth-section').style.display = 'none';
-                    document.getElementById('dashboard').classList.add('active');
-                    document.getElementById('username-display').textContent = user.username;
-                    document.getElementById('sidebar-username').textContent = user.username;
-                    document.getElementById('sidebar-year').textContent = `${getYearName(user.year)} Year`;
-                    document.getElementById('sidebar-department').textContent = user.department;
-                    
-                    // Update profile info
-                    document.getElementById('profile-username').textContent = user.username;
-                    document.getElementById('profile-email').textContent = user.email;
-                    document.getElementById('profile-year').textContent = `${getYearName(user.year)} Year`;
-                    document.getElementById('profile-department').textContent = user.department;
-                    document.getElementById('profile-section').textContent = user.section;
-                    document.getElementById('profile-joined').textContent = new Date(user.joined).toLocaleDateString();
-                    document.getElementById('profile-lastlogin').textContent = new Date().toLocaleString();
-                    
-                    // Apply user preferences
-                    applyUserPreferences(user);
-                    
-                    // Load groups after login
-                    loadGroups();
-                    
-                    // Load subject cards based on department and year
-                    loadSubjectCards(user.department, user.year);
-                    
-                    // Update department-year display
-                    document.getElementById('department-year-display').textContent = 
-                        `${user.department} - ${getYearName(user.year)} Year`;
-                    
-                    showNotification(`Welcome back, ${user.username}!`);
-                } else {
-                    showNotification(authResult.message, false);
-                }
+                authenticateUser(username, password)
+                    .then(authResult => {
+                        if (authResult.success) {
+                            const user = authResult.user;
+                            
+                            // Store current user info
+                            localStorage.setItem('currentUser', JSON.stringify(user));
+                            
+                            // Show dashboard
+                            document.getElementById('auth-section').style.display = 'none';
+                            document.getElementById('dashboard').classList.add('active');
+                            document.getElementById('username-display').textContent = user.username;
+                            document.getElementById('sidebar-username').textContent = user.username;
+                            document.getElementById('sidebar-year').textContent = `${getYearName(user.year)} Year`;
+                            document.getElementById('sidebar-department').textContent = user.department;
+                            
+                            // Update profile info
+                            document.getElementById('profile-username').textContent = user.username;
+                            document.getElementById('profile-email').textContent = user.email;
+                            document.getElementById('profile-year').textContent = `${getYearName(user.year)} Year`;
+                            document.getElementById('profile-department').textContent = user.department;
+                            document.getElementById('profile-section').textContent = user.section;
+                            document.getElementById('profile-joined').textContent = new Date(user.joined).toLocaleDateString();
+                            document.getElementById('profile-lastlogin').textContent = new Date().toLocaleString();
+                            
+                            // Apply user preferences
+                            applyUserPreferences(user);
+                            
+                            // Load groups after login
+                            loadGroups();
+                            
+                            // Load subject cards based on department and year
+                            loadSubjectCards(user.department, user.year);
+                            
+                            // Update department-year display
+                            document.getElementById('department-year-display').textContent = 
+                                `${user.department} - ${getYearName(user.year)} Year`;
+                            
+                            showNotification(`Welcome back, ${user.username}!`);
+                        } else {
+                            showNotification(authResult.message, false);
+                        }
+                    })
+                    .catch(error => {
+                        showNotification('Authentication error: ' + error.message, false);
+                    });
             });
             
             registerBtn.addEventListener('click', () => {
@@ -2911,25 +2893,29 @@
                     return;
                 }
                 
-                const registration = registerUser(username, email, year, department, section, password);
-                
-                if (registration.success) {
-                    // Switch to login tab
-                    document.querySelector('.tab-btn[data-tab="login"]').click();
-                    
-                    // Clear form
-                    document.getElementById('register-username').value = '';
-                    document.getElementById('register-email').value = '';
-                    document.getElementById('register-year').value = '';
-                    document.getElementById('register-department').value = '';
-                    document.getElementById('register-section').value = '';
-                    document.getElementById('register-password').value = '';
-                    document.getElementById('register-confirm-password').value = '';
-                    
-                    showNotification('Account created successfully! Please login.');
-                } else {
-                    showNotification(registration.message, false);
-                }
+                registerUser(username, email, year, department, section, password)
+                    .then(registration => {
+                        if (registration.success) {
+                            // Switch to login tab
+                            document.querySelector('.tab-btn[data-tab="login"]').click();
+                            
+                            // Clear form
+                            document.getElementById('register-username').value = '';
+                            document.getElementById('register-email').value = '';
+                            document.getElementById('register-year').value = '';
+                            document.getElementById('register-department').value = '';
+                            document.getElementById('register-section').value = '';
+                            document.getElementById('register-password').value = '';
+                            document.getElementById('register-confirm-password').value = '';
+                            
+                            showNotification('Account created successfully! Please login.');
+                        } else {
+                            showNotification(registration.message, false);
+                        }
+                    })
+                    .catch(error => {
+                        showNotification('Registration error: ' + error.message, false);
+                    });
             });
         }
         
@@ -3094,19 +3080,25 @@
                 const membersList = document.getElementById('members-list');
                 membersList.innerHTML = '';
                 
-                const users = getUsers();
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                
-                users.forEach(user => {
-                    if (user.id !== currentUser.id) {
-                        const memberItem = document.createElement('div');
-                        memberItem.className = 'member-item';
-                        memberItem.innerHTML = `
-                            <input type="checkbox" id="member-${user.id}" value="${user.id}">
-                            <label for="member-${user.id}">${user.username} (${user.department})</label>
-                        `;
-                        membersList.appendChild(memberItem);
-                    }
+                usersRef.once("value", snapshot => {
+                    const users = [];
+                    snapshot.forEach(childSnapshot => {
+                        users.push(childSnapshot.val());
+                    });
+                    
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    
+                    users.forEach(user => {
+                        if (user.id !== currentUser.id) {
+                            const memberItem = document.createElement('div');
+                            memberItem.className = 'member-item';
+                            memberItem.innerHTML = `
+                                <input type="checkbox" id="member-${user.id}" value="${user.id}">
+                                <label for="member-${user.id}">${user.username} (${user.department})</label>
+                            `;
+                            membersList.appendChild(memberItem);
+                        }
+                    });
                 });
             });
             
@@ -3141,7 +3133,7 @@
                     created: new Date().toISOString()
                 };
                 
-                // Save group
+                // Save group to localStorage
                 const groups = getGroups();
                 groups.push(newGroup);
                 saveGroups(groups);
@@ -3211,20 +3203,25 @@
         }
         
         function getMemberTags(memberIds) {
-            const users = getUsers();
-            const tags = [];
-            
-            // Show first 3 members + count of others
-            for (let i = 0; i < Math.min(3, memberIds.length); i++) {
-                const user = users.find(u => u.id === memberIds[i]);
-                if (user) {
-                    tags.push(`<span class="member-tag">${user.username}</span>`);
+            let tags = [];
+            usersRef.once("value", snapshot => {
+                const users = [];
+                snapshot.forEach(childSnapshot => {
+                    users.push(childSnapshot.val());
+                });
+                
+                // Show first 3 members + count of others
+                for (let i = 0; i < Math.min(3, memberIds.length); i++) {
+                    const user = users.find(u => u.id === memberIds[i]);
+                    if (user) {
+                        tags.push(`<span class="member-tag">${user.username}</span>`);
+                    }
                 }
-            }
-            
-            if (memberIds.length > 3) {
-                tags.push(`<span class="member-tag">+${memberIds.length - 3} more</span>`);
-            }
+                
+                if (memberIds.length > 3) {
+                    tags.push(`<span class="member-tag">+${memberIds.length - 3} more</span>`);
+                }
+            });
             
             return tags.join('');
         }
@@ -3245,18 +3242,24 @@
             
             // Set group info
             document.getElementById('group-chat-name').textContent = group.name;
-            document.getElementById('group-chat-members').textContent = getMemberNames(group.members);
+            
+            // Get member names from Firebase
+            usersRef.once("value", snapshot => {
+                const users = [];
+                snapshot.forEach(childSnapshot => {
+                    users.push(childSnapshot.val());
+                });
+                
+                const memberNames = group.members.map(id => {
+                    const user = users.find(u => u.id === id);
+                    return user ? user.username : '';
+                }).filter(name => name).join(', ');
+                
+                document.getElementById('group-chat-members').textContent = memberNames;
+            });
             
             // Load group messages
             loadGroupMessages(group);
-        }
-        
-        function getMemberNames(memberIds) {
-            const users = getUsers();
-            return memberIds.map(id => {
-                const user = users.find(u => u.id === id);
-                return user ? user.username : '';
-            }).filter(name => name).join(', ');
         }
         
         function loadGroupMessages(group) {
@@ -3270,37 +3273,45 @@
             
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             
-            group.messages.forEach(message => {
-                const user = getUsers().find(u => u.id === message.sender);
-                if (user) {
-                    const messageDiv = document.createElement('div');
-                    
-                    // Determine message class based on sender
-                    if (message.sender === currentUser.id) {
-                        messageDiv.className = 'message user-message';
-                    } else {
-                        messageDiv.className = 'message received-message';
+            // Get users for names
+            usersRef.once("value", snapshot => {
+                const users = [];
+                snapshot.forEach(childSnapshot => {
+                    users.push(childSnapshot.val());
+                });
+                
+                group.messages.forEach(message => {
+                    const user = users.find(u => u.id === message.sender);
+                    if (user) {
+                        const messageDiv = document.createElement('div');
+                        
+                        // Determine message class based on sender
+                        if (message.sender === currentUser.id) {
+                            messageDiv.className = 'message user-message';
+                        } else {
+                            messageDiv.className = 'message received-message';
+                        }
+                        
+                        // Check if message is a file
+                        if (message.isFile) {
+                            messageDiv.innerHTML = `
+                                <strong>${user.username}:</strong> 
+                                <div style="margin-top: 5px;">
+                                    <i class="fas fa-file" style="margin-right: 8px;"></i>
+                                    <a href="#" class="file-download-link">${message.fileName}</a>
+                                </div>
+                            `;
+                        } else {
+                            messageDiv.innerHTML = `<strong>${user.username}:</strong> ${message.text}`;
+                        }
+                        
+                        chatBody.appendChild(messageDiv);
                     }
-                    
-                    // Check if message is a file
-                    if (message.isFile) {
-                        messageDiv.innerHTML = `
-                            <strong>${user.username}:</strong> 
-                            <div style="margin-top: 5px;">
-                                <i class="fas fa-file" style="margin-right: 8px;"></i>
-                                <a href="#" class="file-download-link">${message.fileName}</a>
-                            </div>
-                        `;
-                    } else {
-                        messageDiv.innerHTML = `<strong>${user.username}:</strong> ${message.text}`;
-                    }
-                    
-                    chatBody.appendChild(messageDiv);
-                }
+                });
+                
+                // Scroll to bottom
+                chatBody.scrollTop = chatBody.scrollHeight;
             });
-            
-            // Scroll to bottom
-            chatBody.scrollTop = chatBody.scrollHeight;
         }
         
         // Setup group chat functionality
@@ -3462,13 +3473,8 @@
                 // Update user in localStorage
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
-                // Update users in storage
-                const users = getUsers();
-                const userIndex = users.findIndex(u => u.id === currentUser.id);
-                if (userIndex !== -1) {
-                    users[userIndex] = currentUser;
-                    saveUsers(users);
-                }
+                // Update user in Firebase
+                usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles });
                 
                 // Update subject files display
                 loadSubjectFiles(subject);
@@ -3576,33 +3582,42 @@
                 }
                 
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                const users = getUsers();
-                const userIndex = users.findIndex(u => u.id === currentUser.id);
-                
-                if (userIndex === -1) {
+                if (!currentUser) {
                     showNotification('User not found', false);
                     return;
                 }
                 
-                if (users[userIndex].password !== currentPassword) {
-                    showNotification('Current password is incorrect', false);
-                    return;
-                }
-                
-                // Update password
-                users[userIndex].password = newPassword;
-                saveUsers(users);
-                
-                // Update current user in localStorage
-                currentUser.password = newPassword;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Clear form
-                document.getElementById('current-password').value = '';
-                document.getElementById('new-password').value = '';
-                document.getElementById('confirm-new-password').value = '';
-                
-                showNotification('Password changed successfully!');
+                // Get the user from Firebase
+                usersRef.child(currentUser.id).once("value", snapshot => {
+                    if (snapshot.exists()) {
+                        const user = snapshot.val();
+                        
+                        // Check if current password matches
+                        if (user.password === currentPassword) {
+                            // Update password in Firebase
+                            usersRef.child(currentUser.id).update({ password: newPassword })
+                                .then(() => {
+                                    // Update local user
+                                    currentUser.password = newPassword;
+                                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                                    
+                                    showNotification('Password changed successfully!');
+                                    
+                                    // Clear form
+                                    document.getElementById('current-password').value = '';
+                                    document.getElementById('new-password').value = '';
+                                    document.getElementById('confirm-new-password').value = '';
+                                })
+                                .catch(error => {
+                                    showNotification('Error updating password: ' + error.message, false);
+                                });
+                        } else {
+                            showNotification('Current password is incorrect', false);
+                        }
+                    } else {
+                        showNotification('User not found', false);
+                    }
+                });
             });
         }
         
@@ -3619,14 +3634,17 @@
                 // Save preference to user
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 if (currentUser) {
-                    const users = getUsers();
-                    const userIndex = users.findIndex(u => u.id === currentUser.id);
-                    if (userIndex !== -1) {
-                        users[userIndex].preferences.darkMode = isActive;
-                        saveUsers(users);
-                        currentUser.preferences.darkMode = isActive;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    }
+                    const newPreferences = {
+                        ...currentUser.preferences,
+                        darkMode: isActive
+                    };
+                    
+                    // Update local user
+                    currentUser.preferences = newPreferences;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Update user in Firebase
+                    usersRef.child(currentUser.id).update({ preferences: newPreferences });
                 }
             });
         }
@@ -3643,14 +3661,17 @@
                 // Save preference to user
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 if (currentUser) {
-                    const users = getUsers();
-                    const userIndex = users.findIndex(u => u.id === currentUser.id);
-                    if (userIndex !== -1) {
-                        users[userIndex].preferences.notifications = isActive;
-                        saveUsers(users);
-                        currentUser.preferences.notifications = isActive;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    }
+                    const newPreferences = {
+                        ...currentUser.preferences,
+                        notifications: isActive
+                    };
+                    
+                    // Update local user
+                    currentUser.preferences = newPreferences;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Update user in Firebase
+                    usersRef.child(currentUser.id).update({ preferences: newPreferences });
                 }
             });
         }
@@ -3798,13 +3819,8 @@
                 // Update current user in localStorage
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
-                // Update users in storage
-                const users = getUsers();
-                const userIndex = users.findIndex(u => u.id === currentUser.id);
-                if (userIndex !== -1) {
-                    users[userIndex] = currentUser;
-                    saveUsers(users);
-                }
+                // Update user in Firebase
+                usersRef.child(currentUser.id).update({ aiChatHistory: currentUser.aiChatHistory });
             }
             
             // Call Gemini API
@@ -3905,152 +3921,155 @@
                 showNotification(`Welcome back, ${currentUser.username}!`);
             }
             
-            // Add sample users for demo
-            if (getUsers().length === 0) {
-                const users = [
-                    {
-                        id: '1',
-                        username: 'student',
-                        email: 'student@gmail.com',
-                        year: 'II',
-                        department: 'CSE',
-                        section: 'A',
-                        password: 'password',
-                        joined: new Date().toISOString(),
-                        isAdmin: false,
-                        lastLogin: Date.now(),
-                        preferences: {
-                            darkMode: false,
-                            notifications: true,
-                            answerLength: 4
+            // Add sample users for demo if Firebase is empty
+            usersRef.once("value", snapshot => {
+                if (!snapshot.exists()) {
+                    const users = [
+                        {
+                            id: '1',
+                            username: 'student',
+                            email: 'student@gmail.com',
+                            year: 'II',
+                            department: 'CSE',
+                            section: 'A',
+                            password: 'password',
+                            joined: new Date().toISOString(),
+                            isAdmin: false,
+                            lastLogin: Date.now(),
+                            preferences: {
+                                darkMode: false,
+                                notifications: true,
+                                answerLength: 4
+                            },
+                            aiChatHistory: [],
+                            notes: [],
+                            subjectFiles: {
+                                math: [],
+                                physics: [],
+                                chemistry: [],
+                                biology: [],
+                                computer: [],
+                                english: []
+                            }
                         },
-                        aiChatHistory: [],
-                        notes: [],
-                        subjectFiles: {
-                            math: [],
-                            physics: [],
-                            chemistry: [],
-                            biology: [],
-                            computer: [],
-                            english: []
-                        }
-                    },
-                    {
-                        id: '2',
-                        username: 'admin',
-                        email: 'admin@gmail.com',
-                        year: 'IV',
-                        department: 'CS-DS',
-                        section: 'B',
-                        password: 'password',
-                        joined: new Date().toISOString(),
-                        isAdmin: true,
-                        lastLogin: Date.now(),
-                        preferences: {
-                            darkMode: false,
-                            notifications: true,
-                            answerLength: 4
+                        {
+                            id: '2',
+                            username: 'admin',
+                            email: 'admin@gmail.com',
+                            year: 'IV',
+                            department: 'CS-DS',
+                            section: 'B',
+                            password: 'password',
+                            joined: new Date().toISOString(),
+                            isAdmin: true,
+                            lastLogin: Date.now(),
+                            preferences: {
+                                darkMode: false,
+                                notifications: true,
+                                answerLength: 4
+                            },
+                            aiChatHistory: [],
+                            notes: [],
+                            subjectFiles: {
+                                math: [],
+                                physics: [],
+                                chemistry: [],
+                                biology: [],
+                                computer: [],
+                                english: []
+                            }
                         },
-                        aiChatHistory: [],
-                        notes: [],
-                        subjectFiles: {
-                            math: [],
-                            physics: [],
-                            chemistry: [],
-                            biology: [],
-                            computer: [],
-                            english: []
-                        }
-                    },
-                    {
-                        id: '3',
-                        username: 'jane',
-                        email: 'jane@gmail.com',
-                        year: 'II',
-                        department: 'CSE',
-                        section: 'A',
-                        password: 'password',
-                        joined: new Date().toISOString(),
-                        isAdmin: false,
-                        lastLogin: Date.now(),
-                        preferences: {
-                            darkMode: false,
-                            notifications: true,
-                            answerLength: 4
+                        {
+                            id: '3',
+                            username: 'jane',
+                            email: 'jane@gmail.com',
+                            year: 'II',
+                            department: 'CSE',
+                            section: 'A',
+                            password: 'password',
+                            joined: new Date().toISOString(),
+                            isAdmin: false,
+                            lastLogin: Date.now(),
+                            preferences: {
+                                darkMode: false,
+                                notifications: true,
+                                answerLength: 4
+                            },
+                            aiChatHistory: [],
+                            notes: [],
+                            subjectFiles: {
+                                math: [],
+                                physics: [],
+                                chemistry: [],
+                                biology: [],
+                                computer: [],
+                                english: []
+                            }
                         },
-                        aiChatHistory: [],
-                        notes: [],
-                        subjectFiles: {
-                            math: [],
-                            physics: [],
-                            chemistry: [],
-                            biology: [],
-                            computer: [],
-                            english: []
+                        {
+                            id: '4',
+                            username: 'mike',
+                            email: 'mike@gmail.com',
+                            year: 'III',
+                            department: 'AIML',
+                            section: 'C',
+                            password: 'password',
+                            joined: new Date().toISOString(),
+                            isAdmin: false,
+                            lastLogin: Date.now(),
+                            preferences: {
+                                darkMode: false,
+                                notifications: true,
+                                answerLength: 4
+                            },
+                            aiChatHistory: [],
+                            notes: [],
+                            subjectFiles: {
+                                math: [],
+                                physics: [],
+                                chemistry: [],
+                                biology: [],
+                                computer: [],
+                                english: []
+                            }
                         }
-                    },
-                    {
-                        id: '4',
-                        username: 'mike',
-                        email: 'mike@gmail.com',
-                        year: 'III',
-                        department: 'AIML',
-                        section: 'C',
-                        password: 'password',
-                        joined: new Date().toISOString(),
-                        isAdmin: false,
-                        lastLogin: Date.now(),
-                        preferences: {
-                            darkMode: false,
-                            notifications: true,
-                            answerLength: 4
+                    ];
+                    
+                    users.forEach(user => {
+                        usersRef.child(user.id).set(user);
+                    });
+                    
+                    // Add sample groups
+                    const groups = [
+                        {
+                            id: '1',
+                            name: 'Computer Science Study Group',
+                            creator: '1',
+                            members: ['1', '2', '3'],
+                            messages: [
+                                { sender: '1', text: 'Hey everyone! Let\'s share some useful resources for the upcoming exam.' },
+                                { sender: '3', text: 'I found this great PDF with practice questions. I\'ll upload it to the group.' },
+                                { sender: '2', text: 'Thanks Jane! Does anyone want to meet tomorrow to go over chapter 5?' }
+                            ],
+                            files: [],
+                            created: new Date().toISOString()
                         },
-                        aiChatHistory: [],
-                        notes: [],
-                        subjectFiles: {
-                            math: [],
-                            physics: [],
-                            chemistry: [],
-                            biology: [],
-                            computer: [],
-                            english: []
+                        {
+                            id: '2',
+                            name: 'Mathematics Study Group',
+                            creator: '1',
+                            members: ['1', '4'],
+                            messages: [
+                                { sender: '1', text: 'Can someone help me with calculus problem set #3?' },
+                                { sender: '4', text: 'Sure, I can help. Which problems are you stuck on?' }
+                            ],
+                            files: [],
+                            created: new Date().toISOString()
                         }
-                    }
-                ];
-                saveUsers(users);
-            }
-            
-            // Add sample groups for demo
-            if (getGroups().length === 0) {
-                const groups = [
-                    {
-                        id: '1',
-                        name: 'Computer Science Study Group',
-                        creator: '1',
-                        members: ['1', '2', '3'],
-                        messages: [
-                            { sender: '1', text: 'Hey everyone! Let\'s share some useful resources for the upcoming exam.' },
-                            { sender: '3', text: 'I found this great PDF with practice questions. I\'ll upload it to the group.' },
-                            { sender: '2', text: 'Thanks Jane! Does anyone want to meet tomorrow to go over chapter 5?' }
-                        ],
-                        files: [],
-                        created: new Date().toISOString()
-                    },
-                    {
-                        id: '2',
-                        name: 'Mathematics Study Group',
-                        creator: '1',
-                        members: ['1', '4'],
-                        messages: [
-                            { sender: '1', text: 'Can someone help me with calculus problem set #3?' },
-                            { sender: '4', text: 'Sure, I can help. Which problems are you stuck on?' }
-                        ],
-                        files: [],
-                        created: new Date().toISOString()
-                    }
-                ];
-                saveGroups(groups);
-            }
+                    ];
+                    localStorage.setItem('NotifyGroups', JSON.stringify(groups));
+                }
+            });
         });
     </script>
 </body>
