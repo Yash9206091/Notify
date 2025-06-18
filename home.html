@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notify</title>
+    <title>Notify - College Study Companion</title>
     <link rel="icon" href="favicon1.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
@@ -1222,7 +1222,7 @@
             height: 60px;
             background: rgba(67, 97, 238, 0.1);
             border-radius: 50%;
-            margin-bottom: 15px;
+            margin: 0 auto 15px;
             font-size: 1.8rem;
             color: var(--primary);
         }
@@ -2333,6 +2333,8 @@
         // Reference to your database
         const database = firebase.database();
         const usersRef = database.ref("users");
+        const groupsRef = database.ref("groups");
+        const messagesRef = database.ref("messages");
         
         // Department and year subject mapping
         const departmentSubjects = {
@@ -3122,57 +3124,59 @@
                 
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 
-                // Create new group
+                // Create new group object
                 const newGroup = {
-                    id: Date.now().toString(),
                     name: groupName,
                     creator: currentUser.id,
                     members: [currentUser.id, ...selectedMembers],
-                    messages: [],
-                    files: [],
                     created: new Date().toISOString()
                 };
                 
-                // Save group to localStorage
-                const groups = getGroups();
-                groups.push(newGroup);
-                saveGroups(groups);
-                
-                // Close modal
-                modal.classList.remove('active');
-                
-                // Reload groups
-                loadGroups();
-                
-                showNotification(`Group "${groupName}" created successfully!`);
+                // Push to Firebase
+                const newGroupRef = groupsRef.push();
+                newGroupRef.set(newGroup)
+                    .then(() => {
+                        // Close modal
+                        modal.classList.remove('active');
+                        
+                        // Reload groups
+                        loadGroups();
+                        
+                        showNotification(`Group "${groupName}" created successfully!`);
+                    })
+                    .catch(error => {
+                        showNotification('Error creating group: ' + error.message, false);
+                    });
             });
         }
         
-        // Group management functions
-        function getGroups() {
-            const groups = localStorage.getItem('NotifyGroups');
-            return groups ? JSON.parse(groups) : [];
-        }
-        
-        function saveGroups(groups) {
-            localStorage.setItem('NotifyGroups', JSON.stringify(groups));
-        }
-        
+        // Load groups from Firebase
         function loadGroups() {
-            const groups = getGroups();
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            const groupsContainer = document.getElementById('groups-container');
+            if (!currentUser) return;
             
-            groupsContainer.innerHTML = '';
-            
-            if (groups.length === 0) {
-                groupsContainer.innerHTML = '<p>No groups available. Create one to get started!</p>';
-                return;
-            }
-            
-            groups.forEach(group => {
-                // Only show groups that current user is member of
-                if (group.members.includes(currentUser.id)) {
+            groupsRef.once("value", snapshot => {
+                const groups = [];
+                snapshot.forEach(childSnapshot => {
+                    const group = childSnapshot.val();
+                    group.id = childSnapshot.key;
+                    groups.push(group);
+                });
+                
+                // Filter groups where current user is a member
+                const userGroups = groups.filter(group => 
+                    group.members.includes(currentUser.id)
+                );
+                
+                const groupsContainer = document.getElementById('groups-container');
+                groupsContainer.innerHTML = '';
+                
+                if (userGroups.length === 0) {
+                    groupsContainer.innerHTML = '<p>No groups available. Create one to get started!</p>';
+                    return;
+                }
+                
+                userGroups.forEach(group => {
                     const groupCard = document.createElement('div');
                     groupCard.className = 'group-card';
                     groupCard.setAttribute('data-group-id', group.id);
@@ -3188,8 +3192,8 @@
                         </div>
                         
                         <div class="group-stats">
-                            <span><i class="fas fa-comment"></i> ${group.messages?.length || 0} messages</span>
-                            <span><i class="fas fa-file"></i> ${group.files?.length || 0} files</span>
+                            <span><i class="fas fa-comment"></i> ${group.messageCount || 0} messages</span>
+                            <span><i class="fas fa-file"></i> ${group.fileCount || 0} files</span>
                         </div>
                     `;
                     groupsContainer.appendChild(groupCard);
@@ -3198,10 +3202,11 @@
                     groupCard.addEventListener('click', () => {
                         openGroupChat(group.id);
                     });
-                }
+                });
             });
         }
         
+        // Get member tags
         function getMemberTags(memberIds) {
             let tags = [];
             usersRef.once("value", snapshot => {
@@ -3226,63 +3231,82 @@
             return tags.join('');
         }
         
+        // Open group chat
         function openGroupChat(groupId) {
-            const groups = getGroups();
-            const group = groups.find(g => g.id === groupId);
-            
-            if (!group) return;
-            
-            // Hide groups page
-            document.getElementById('groups-page').style.display = 'none';
-            
-            // Show group chat page
-            const groupChatPage = document.getElementById('group-chat-page');
-            groupChatPage.style.display = 'block';
-            groupChatPage.setAttribute('data-group-id', groupId);
-            
-            // Set group info
-            document.getElementById('group-chat-name').textContent = group.name;
-            
-            // Get member names from Firebase
-            usersRef.once("value", snapshot => {
-                const users = [];
-                snapshot.forEach(childSnapshot => {
-                    users.push(childSnapshot.val());
+            // Get group from Firebase
+            groupsRef.child(groupId).once("value", groupSnapshot => {
+                if (!groupSnapshot.exists()) return;
+                
+                const group = groupSnapshot.val();
+                group.id = groupId;
+                
+                // Hide groups page
+                document.getElementById('groups-page').style.display = 'none';
+                
+                // Show group chat page
+                const groupChatPage = document.getElementById('group-chat-page');
+                groupChatPage.style.display = 'block';
+                groupChatPage.setAttribute('data-group-id', groupId);
+                
+                // Set group info
+                document.getElementById('group-chat-name').textContent = group.name;
+                
+                // Get member names from Firebase
+                usersRef.once("value", snapshot => {
+                    const users = [];
+                    snapshot.forEach(childSnapshot => {
+                        users.push(childSnapshot.val());
+                    });
+                    
+                    const memberNames = group.members.map(id => {
+                        const user = users.find(u => u.id === id);
+                        return user ? user.username : '';
+                    }).filter(name => name).join(', ');
+                    
+                    document.getElementById('group-chat-members').textContent = memberNames;
                 });
                 
-                const memberNames = group.members.map(id => {
-                    const user = users.find(u => u.id === id);
-                    return user ? user.username : '';
-                }).filter(name => name).join(', ');
-                
-                document.getElementById('group-chat-members').textContent = memberNames;
+                // Load group messages
+                loadGroupMessages(groupId);
             });
-            
-            // Load group messages
-            loadGroupMessages(group);
         }
         
-        function loadGroupMessages(group) {
+        // Load group messages from Firebase
+        function loadGroupMessages(groupId) {
             const chatBody = document.getElementById('group-chat-body');
             chatBody.innerHTML = '';
             
-            if (!group.messages || group.messages.length === 0) {
-                chatBody.innerHTML = '<p>No messages yet. Start the conversation!</p>';
-                return;
-            }
-            
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            
-            // Get users for names
-            usersRef.once("value", snapshot => {
-                const users = [];
-                snapshot.forEach(childSnapshot => {
-                    users.push(childSnapshot.val());
-                });
+            // Get messages for this group from Firebase
+            messagesRef.orderByChild("groupId").equalTo(groupId).on("value", messagesSnapshot => {
+                chatBody.innerHTML = '';
                 
-                group.messages.forEach(message => {
-                    const user = users.find(u => u.id === message.sender);
-                    if (user) {
+                if (!messagesSnapshot.exists()) {
+                    chatBody.innerHTML = '<p>No messages yet. Start the conversation!</p>';
+                    return;
+                }
+                
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const users = {};
+                
+                // First get all users to map IDs to names
+                usersRef.once("value", usersSnapshot => {
+                    usersSnapshot.forEach(childSnapshot => {
+                        const user = childSnapshot.val();
+                        users[user.id] = user.username;
+                    });
+                    
+                    // Now process messages
+                    const messages = [];
+                    messagesSnapshot.forEach(childSnapshot => {
+                        const message = childSnapshot.val();
+                        messages.push(message);
+                    });
+                    
+                    // Sort messages by timestamp
+                    messages.sort((a, b) => a.timestamp - b.timestamp);
+                    
+                    // Display messages
+                    messages.forEach(message => {
                         const messageDiv = document.createElement('div');
                         
                         // Determine message class based on sender
@@ -3295,22 +3319,22 @@
                         // Check if message is a file
                         if (message.isFile) {
                             messageDiv.innerHTML = `
-                                <strong>${user.username}:</strong> 
+                                <strong>${users[message.sender] || 'Unknown'}:</strong> 
                                 <div style="margin-top: 5px;">
                                     <i class="fas fa-file" style="margin-right: 8px;"></i>
                                     <a href="#" class="file-download-link">${message.fileName}</a>
                                 </div>
                             `;
                         } else {
-                            messageDiv.innerHTML = `<strong>${user.username}:</strong> ${message.text}`;
+                            messageDiv.innerHTML = `<strong>${users[message.sender] || 'Unknown'}:</strong> ${message.text}`;
                         }
                         
                         chatBody.appendChild(messageDiv);
-                    }
+                    });
+                    
+                    // Scroll to bottom
+                    chatBody.scrollTop = chatBody.scrollHeight;
                 });
-                
-                // Scroll to bottom
-                chatBody.scrollTop = chatBody.scrollHeight;
             });
         }
         
@@ -3340,47 +3364,29 @@
                 const groupId = document.getElementById('group-chat-page').getAttribute('data-group-id');
                 if (!groupId) return;
                 
-                const groups = getGroups();
-                const groupIndex = groups.findIndex(g => g.id === groupId);
-                if (groupIndex === -1) return;
-                
                 // Create file message object
                 const message = {
+                    groupId: groupId,
                     sender: currentUser.id,
                     isFile: true,
                     fileName: file.name,
                     fileType: file.type,
                     fileSize: formatFileSize(file.size),
-                    timestamp: new Date().toISOString()
+                    timestamp: Date.now()
                 };
                 
-                // Add to group's messages
-                if (!groups[groupIndex].messages) {
-                    groups[groupIndex].messages = [];
-                }
-                groups[groupIndex].messages.push(message);
-                
-                // Save groups
-                saveGroups(groups);
-                
-                // Add message to chat
-                const chatBody = document.getElementById('group-chat-body');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message user-message';
-                messageDiv.innerHTML = `
-                    <strong>${currentUser.username}:</strong> 
-                    <div style="margin-top: 5px;">
-                        <i class="fas fa-file" style="margin-right: 8px;"></i>
-                        <a href="#" class="file-download-link">${file.name}</a>
-                    </div>
-                `;
-                chatBody.appendChild(messageDiv);
+                // Push to Firebase
+                messagesRef.push(message)
+                    .then(() => {
+                        // Update group message count
+                        updateGroupMessageCount(groupId);
+                    })
+                    .catch(error => {
+                        showNotification('Error sending file: ' + error.message, false);
+                    });
                 
                 // Clear file input
                 groupFileUpload.value = '';
-                
-                // Scroll to bottom
-                chatBody.scrollTop = chatBody.scrollHeight;
                 
                 showNotification(`File "${file.name}" attached!`);
             });
@@ -3394,39 +3400,47 @@
                 
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 
-                const groups = getGroups();
-                const groupIndex = groups.findIndex(g => g.id === groupId);
-                if (groupIndex === -1) return;
-                
                 // Create message object
                 const message = {
+                    groupId: groupId,
                     sender: currentUser.id,
                     text: messageText,
-                    timestamp: new Date().toISOString()
+                    timestamp: Date.now()
                 };
                 
-                // Add to group's messages
-                if (!groups[groupIndex].messages) {
-                    groups[groupIndex].messages = [];
-                }
-                groups[groupIndex].messages.push(message);
-                
-                // Save groups
-                saveGroups(groups);
-                
-                // Add message to chat
-                const chatBody = document.getElementById('group-chat-body');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message user-message';
-                messageDiv.innerHTML = `<strong>${currentUser.username}:</strong> ${messageText}`;
-                chatBody.appendChild(messageDiv);
-                
-                // Clear input
-                groupChatInput.value = '';
-                
-                // Scroll to bottom
-                chatBody.scrollTop = chatBody.scrollHeight;
+                // Push to Firebase
+                messagesRef.push(message)
+                    .then(() => {
+                        // Clear input
+                        groupChatInput.value = '';
+                        
+                        // Update group message count
+                        updateGroupMessageCount(groupId);
+                    })
+                    .catch(error => {
+                        showNotification('Error sending message: ' + error.message, false);
+                    });
             }
+            
+            // Update group message count in Firebase
+            function updateGroupMessageCount(groupId) {
+                groupsRef.child(groupId).once("value", snapshot => {
+                    if (snapshot.exists()) {
+                        const group = snapshot.val();
+                        const newCount = (group.messageCount || 0) + 1;
+                        groupsRef.child(groupId).update({ messageCount: newCount });
+                    }
+                });
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
         
         // Setup file upload functionality
@@ -3484,15 +3498,6 @@
                 
                 showNotification(`File "${file.name}" saved successfully!`);
             });
-        }
-        
-        // Format file size
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
         
         // Load subject files
@@ -4046,28 +4051,60 @@
                             name: 'Computer Science Study Group',
                             creator: '1',
                             members: ['1', '2', '3'],
-                            messages: [
-                                { sender: '1', text: 'Hey everyone! Let\'s share some useful resources for the upcoming exam.' },
-                                { sender: '3', text: 'I found this great PDF with practice questions. I\'ll upload it to the group.' },
-                                { sender: '2', text: 'Thanks Jane! Does anyone want to meet tomorrow to go over chapter 5?' }
-                            ],
-                            files: [],
-                            created: new Date().toISOString()
+                            created: new Date().toISOString(),
+                            messageCount: 3
                         },
                         {
                             id: '2',
                             name: 'Mathematics Study Group',
                             creator: '1',
                             members: ['1', '4'],
-                            messages: [
-                                { sender: '1', text: 'Can someone help me with calculus problem set #3?' },
-                                { sender: '4', text: 'Sure, I can help. Which problems are you stuck on?' }
-                            ],
-                            files: [],
-                            created: new Date().toISOString()
+                            created: new Date().toISOString(),
+                            messageCount: 2
                         }
                     ];
-                    localStorage.setItem('NotifyGroups', JSON.stringify(groups));
+                    
+                    groups.forEach(group => {
+                        groupsRef.child(group.id).set(group);
+                    });
+                    
+                    // Add sample messages
+                    const messages = [
+                        {
+                            groupId: '1',
+                            sender: '1',
+                            text: 'Hey everyone! Let\'s share some useful resources for the upcoming exam.',
+                            timestamp: Date.now() - 3600000
+                        },
+                        {
+                            groupId: '1',
+                            sender: '3',
+                            text: 'I found this great PDF with practice questions. I\'ll upload it to the group.',
+                            timestamp: Date.now() - 1800000
+                        },
+                        {
+                            groupId: '1',
+                            sender: '2',
+                            text: 'Thanks Jane! Does anyone want to meet tomorrow to go over chapter 5?',
+                            timestamp: Date.now() - 900000
+                        },
+                        {
+                            groupId: '2',
+                            sender: '1',
+                            text: 'Can someone help me with calculus problem set #3?',
+                            timestamp: Date.now() - 7200000
+                        },
+                        {
+                            groupId: '2',
+                            sender: '4',
+                            text: 'Sure, I can help. Which problems are you stuck on?',
+                            timestamp: Date.now() - 3600000
+                        }
+                    ];
+                    
+                    messages.forEach(message => {
+                        messagesRef.push(message);
+                    });
                 }
             });
         });
