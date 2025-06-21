@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notify - College Study Companion</title>
-    <link rel="icon" href="favicon1.ico" type="image/x-icon">
+    <link rel="icon" href="favicon1.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -355,6 +355,7 @@
             justify-content: center;
             color: white;
             font-size: 2rem;
+            position: relative;
         }
 
         .sidebar-menu {
@@ -589,6 +590,7 @@
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: var(--transition);
+            position: relative;
         }
 
         .file-card:hover {
@@ -716,6 +718,7 @@
             justify-content: center;
             color: white;
             font-size: 3rem;
+            position: relative;
         }
 
         .profile-info {
@@ -1664,6 +1667,43 @@
             font-weight: 600;
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
         }
+        
+        /* New styles for department badge */
+        .department-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            z-index: 2;
+        }
+        
+        .admin-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--warning);
+            color: var(--dark);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .file-type-badge {
+            background: var(--success);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -1704,7 +1744,7 @@
         <!-- Auth Section -->
         <div class="auth-section" id="auth-section">
             <div class="logo">
-                <h1> <img src="favicon1.ico" alt="logo.png" style="height: 60px; vertical-align: -7px;">otify</h1>
+                <h1> <img src="favicon1.ico" alt="logo" style="height: 60px; vertical-align: -7px;">otify</h1>
                 <p>Your Ultimate College Study Companion</p>
             </div>
             
@@ -2335,6 +2375,7 @@
         const usersRef = database.ref("users");
         const groupsRef = database.ref("groups");
         const messagesRef = database.ref("messages");
+        const departmentFilesRef = database.ref("departmentFiles");
         
         // Department and year subject mapping
         const departmentSubjects = {
@@ -3032,7 +3073,7 @@
                         <h3>${subject.name}</h3>
                         <p>Study materials and resources</p>
                     </div>
-                    <div class="card-badge">0 PDFs</div>
+                    <div class="card-badge">0 files</div>
                 `;
                 container.appendChild(card);
                 
@@ -3466,37 +3507,158 @@
                 
                 const subject = document.getElementById('subject-name').textContent.toLowerCase();
                 
-                if (!currentUser.subjectFiles) {
-                    currentUser.subjectFiles = {};
+                // Check if user is admincsds
+                if (currentUser.username === 'admincsds') {
+                    // Upload to department files
+                    uploadToDepartmentFiles(currentUser, subject, file);
+                } else {
+                    // Regular user upload
+                    uploadToPersonalFiles(currentUser, subject, file);
+                }
+            });
+        }
+        
+        // Upload file to department files (admin only)
+        function uploadToDepartmentFiles(currentUser, subject, file) {
+            const department = currentUser.department;
+            const year = currentUser.year;
+            
+            const newFile = {
+                id: Date.now().toString(),
+                name: file.name,
+                type: file.type,
+                size: formatFileSize(file.size),
+                uploadedAt: new Date().toISOString(),
+                uploadedBy: currentUser.username,
+                department: department,
+                year: year,
+                subject: subject
+            };
+            
+            // Create a reference to department files for this subject
+            const deptFilesRef = database.ref(`departmentFiles/${department}/${year}/${subject}`);
+            
+            // Get existing files and add new one
+            deptFilesRef.once("value", snapshot => {
+                let files = [];
+                if (snapshot.exists()) {
+                    files = snapshot.val();
                 }
                 
-                if (!currentUser.subjectFiles[subject]) {
-                    currentUser.subjectFiles[subject] = [];
+                files.push(newFile);
+                
+                // Save to Firebase
+                deptFilesRef.set(files)
+                    .then(() => {
+                        showNotification(`File "${file.name}" added to department files!`);
+                        
+                        // Reload subject files
+                        loadSubjectFiles(subject);
+                        
+                        // Update all users in department
+                        notifyDepartmentUsers(department, year);
+                    })
+                    .catch(error => {
+                        showNotification('Error saving department file: ' + error.message, false);
+                    });
+            });
+        }
+        
+        // Upload file to personal files
+        function uploadToPersonalFiles(currentUser, subject, file) {
+            if (!currentUser.subjectFiles) {
+                currentUser.subjectFiles = {};
+            }
+            
+            if (!currentUser.subjectFiles[subject]) {
+                currentUser.subjectFiles[subject] = [];
+            }
+            
+            const newFile = {
+                id: Date.now().toString(),
+                name: file.name,
+                type: file.type,
+                size: formatFileSize(file.size),
+                uploadedAt: new Date().toISOString()
+            };
+            
+            currentUser.subjectFiles[subject].push(newFile);
+            
+            // Update user in localStorage
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Update user in Firebase
+            usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
+                .then(() => {
+                    showNotification(`File "${file.name}" saved successfully!`);
+                    
+                    // Update subject files display
+                    loadSubjectFiles(subject);
+                    
+                    // Update card badge
+                    updateSubjectCardBadges();
+                })
+                .catch(error => {
+                    showNotification('Error saving personal file: ' + error.message, false);
+                });
+        }
+        
+        // Notify all users in department about new file
+        function notifyDepartmentUsers(department, year) {
+            usersRef.orderByChild("department").equalTo(department).once("value", snapshot => {
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        const user = childSnapshot.val();
+                        if (user.year === year) {
+                            // Update badge counts for all users in this department/year
+                            updateSubjectCardBadgesForUser(user.id);
+                        }
+                    });
                 }
-                
-                const newFile = {
-                    id: Date.now().toString(),
-                    name: file.name,
-                    type: file.type,
-                    size: formatFileSize(file.size),
-                    uploadedAt: new Date().toISOString()
-                };
-                
-                currentUser.subjectFiles[subject].push(newFile);
-                
-                // Update user in localStorage
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Update user in Firebase
-                usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles });
-                
-                // Update subject files display
-                loadSubjectFiles(subject);
-                
-                // Update card badge
-                updateSubjectCardBadges();
-                
-                showNotification(`File "${file.name}" saved successfully!`);
+            });
+        }
+        
+        // Update subject card badges for a specific user
+        function updateSubjectCardBadgesForUser(userId) {
+            usersRef.child(userId).once("value", snapshot => {
+                if (snapshot.exists()) {
+                    const user = snapshot.val();
+                    const department = user.department;
+                    const year = user.year;
+                    
+                    // Get department files for this user's department/year
+                    departmentFilesRef.child(`${department}/${year}`).once("value", deptSnapshot => {
+                        const deptFiles = deptSnapshot.exists() ? deptSnapshot.val() : {};
+                        
+                        // Calculate total files for each subject
+                        const subjectCounts = {};
+                        
+                        // Count personal files
+                        if (user.subjectFiles) {
+                            Object.entries(user.subjectFiles).forEach(([subject, files]) => {
+                                subjectCounts[subject] = files.length;
+                            });
+                        }
+                        
+                        // Count department files
+                        Object.entries(deptFiles).forEach(([subject, files]) => {
+                            if (!subjectCounts[subject]) subjectCounts[subject] = 0;
+                            subjectCounts[subject] += files.length;
+                        });
+                        
+                        // Update badges in UI if this is the current user
+                        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                        if (currentUser && currentUser.id === user.id) {
+                            const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
+                            subjectCards.forEach(card => {
+                                const subject = card.getAttribute('data-subject');
+                                const badge = card.querySelector('.card-badge');
+                                const count = subjectCounts[subject] || 0;
+                                badge.textContent = `${count} file${count !== 1 ? 's' : ''}`;
+                            });
+                        }
+                    });
+                }
             });
         }
         
@@ -3508,35 +3670,60 @@
             const filesContainer = document.getElementById('subject-files');
             filesContainer.innerHTML = '';
             
-            if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject] || currentUser.subjectFiles[subject].length === 0) {
-                filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
-                return;
-            }
+            // Get personal files
+            const personalFiles = currentUser.subjectFiles && currentUser.subjectFiles[subject] || [];
             
-            currentUser.subjectFiles[subject].forEach(file => {
-                const fileCard = document.createElement('div');
-                fileCard.className = 'file-card';
-                fileCard.innerHTML = `
-                    <div class="file-icon">
-                        <i class="${getFileIcon(file.type)}"></i>
-                    </div>
-                    <div class="file-content">
-                        <h4>${file.name}</h4>
-                        <div class="file-meta">
-                            <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
-                            <span>${file.size}</span>
+            // Get department files for this subject
+            departmentFilesRef.child(`${currentUser.department}/${currentUser.year}/${subject}`).once("value", snapshot => {
+                const departmentFiles = snapshot.exists() ? snapshot.val() : [];
+                
+                // Combine personal and department files
+                const allFiles = [...personalFiles, ...departmentFiles];
+                
+                if (allFiles.length === 0) {
+                    filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
+                    return;
+                }
+                
+                // Display all files
+                allFiles.forEach(file => {
+                    const isDepartmentFile = file.uploadedBy === 'admincsds';
+                    
+                    const fileCard = document.createElement('div');
+                    fileCard.className = 'file-card';
+                    fileCard.setAttribute('data-file-id', file.id);
+                    fileCard.setAttribute('data-file-source', isDepartmentFile ? 'department' : 'personal');
+                    
+                    fileCard.innerHTML = `
+                        <div class="file-icon">
+                            <i class="${getFileIcon(file.type)}"></i>
                         </div>
-                        <div class="file-actions">
-                            <button class="file-action download">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                            <button class="file-action delete">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                        <div class="file-content">
+                            <h4>${file.name}</h4>
+                            <div class="file-meta">
+                                <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
+                                <span>${file.size}</span>
+                            </div>
+                            ${isDepartmentFile ? '<div class="department-badge">Department File</div>' : ''}
+                            ${file.uploadedBy === 'admincsds' ? '<div class="admin-indicator">Admin</div>' : ''}
+                            <div class="file-actions">
+                                <button class="file-action download">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="file-action delete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-                filesContainer.appendChild(fileCard);
+                    `;
+                    filesContainer.appendChild(fileCard);
+                    
+                    // Add delete event
+                    const deleteBtn = fileCard.querySelector('.file-action.delete');
+                    deleteBtn.addEventListener('click', () => {
+                        deleteFile(file, isDepartmentFile, subject);
+                    });
+                });
             });
         }
         
@@ -3549,21 +3736,83 @@
             return 'fas fa-file';
         }
         
+        // Delete a file
+        function deleteFile(file, isDepartmentFile, subject) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            if (isDepartmentFile) {
+                // Only admin can delete department files
+                if (currentUser.username !== 'admincsds') {
+                    showNotification('Only admin can delete department files', false);
+                    return;
+                }
+                
+                // Delete from department files
+                const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
+                
+                deptFilesRef.once("value", snapshot => {
+                    if (snapshot.exists()) {
+                        let files = snapshot.val();
+                        files = files.filter(f => f.id !== file.id);
+                        
+                        deptFilesRef.set(files)
+                            .then(() => {
+                                showNotification(`File "${file.name}" deleted from department files`);
+                                loadSubjectFiles(subject);
+                                notifyDepartmentUsers(currentUser.department, currentUser.year);
+                            })
+                            .catch(error => {
+                                showNotification('Error deleting file: ' + error.message, false);
+                            });
+                    }
+                });
+            } else {
+                // Delete personal file
+                if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject]) {
+                    return;
+                }
+                
+                currentUser.subjectFiles[subject] = currentUser.subjectFiles[subject].filter(f => f.id !== file.id);
+                
+                // Update user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update user in Firebase
+                usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
+                    .then(() => {
+                        showNotification(`File "${file.name}" deleted`);
+                        loadSubjectFiles(subject);
+                        updateSubjectCardBadges();
+                    })
+                    .catch(error => {
+                        showNotification('Error deleting file: ' + error.message, false);
+                    });
+            }
+        }
+        
         // Update subject card badges
         function updateSubjectCardBadges() {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (!currentUser || !currentUser.subjectFiles) return;
             
-            const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
-            subjectCards.forEach(card => {
-                const subject = card.getAttribute('data-subject');
-                const badge = card.querySelector('.card-badge');
-                if (currentUser.subjectFiles[subject] && currentUser.subjectFiles[subject].length > 0) {
-                    const count = currentUser.subjectFiles[subject].length;
-                    badge.textContent = `${count} PDF${count !== 1 ? 's' : ''}`;
-                } else {
-                    badge.textContent = '0 PDFs';
-                }
+            // Get department files for this user's department/year
+            departmentFilesRef.child(`${currentUser.department}/${currentUser.year}`).once("value", snapshot => {
+                const deptFiles = snapshot.exists() ? snapshot.val() : {};
+                
+                const subjectCards = document.querySelectorAll('.subject-card[data-subject]');
+                subjectCards.forEach(card => {
+                    const subject = card.getAttribute('data-subject');
+                    const badge = card.querySelector('.card-badge');
+                    
+                    // Personal files count
+                    const personalCount = currentUser.subjectFiles[subject] ? currentUser.subjectFiles[subject].length : 0;
+                    
+                    // Department files count
+                    const deptCount = deptFiles[subject] ? deptFiles[subject].length : 0;
+                    
+                    const totalCount = personalCount + deptCount;
+                    badge.textContent = `${totalCount} file${totalCount !== 1 ? 's' : ''}`;
+                });
             });
         }
         
@@ -3924,6 +4173,14 @@
                     `${currentUser.department} - ${getYearName(currentUser.year)} Year`;
                 
                 showNotification(`Welcome back, ${currentUser.username}!`);
+                
+                // Add admin indicator if user is admincsds
+                if (currentUser.username === 'admincsds') {
+                    const avatar = document.querySelector('.user-avatar');
+                    if (avatar) {
+                        avatar.innerHTML += '<div class="admin-indicator">Admin</div>';
+                    }
+                }
             }
             
             // Add sample users for demo if Firebase is empty
@@ -3959,10 +4216,10 @@
                         },
                         {
                             id: '2',
-                            username: 'admin',
-                            email: 'admin@gmail.com',
+                            username: 'admincsds',
+                            email: 'admincsds@gmail.com',
                             year: 'IV',
-                            department: 'CS-DS',
+                            department: 'CSE',
                             section: 'B',
                             password: 'password',
                             joined: new Date().toISOString(),
