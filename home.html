@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notify - College Study Companion</title>
-    <link rel="icon" href="favicon1.ico">
+    <title>Notify</title>
+    <link rel="icon" href="favicon1.ico" type="image/x-icon">
+    <!-- <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -330,13 +331,16 @@
             height: fit-content;
             max-height: 90vh;
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
 
+        /* Updated: Centered sidebar header for desktop */
         .sidebar-header {
             text-align: center;
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
             margin-bottom: 20px;
+            display: block;
         }
 
         .sidebar-header h3 {
@@ -1453,6 +1457,55 @@
             border-bottom: 1px solid #eee;
         }
 
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Mobile hamburger menu */
+        .mobile-menu-btn {
+            display: none;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-menu-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        /* Mobile close button for sidebar */
+        .sidebar-close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+        }
+
         /* Responsive design */
         @media (max-width: 992px) {
             .dashboard.active {
@@ -1499,6 +1552,51 @@
             
             .tab-btn {
                 margin: 5px 0;
+            }
+
+            /* Mobile sidebar styles - FIXED */
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                border-radius: 0;
+                margin: 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                max-height: none;
+                overflow-y: auto;
+                padding-top: 70px;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .sidebar-close-btn {
+                display: block;
+            }
+            
+            /* Updated: Mobile sidebar header */
+            .sidebar-header {
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+            
+            .sidebar-header h3 {
+                margin-top: 20px;
             }
         }
 
@@ -1567,6 +1665,33 @@
             
             .group-chat-footer {
                 flex-direction: column;
+            }
+            
+            .mobile-menu-btn {
+                top: 15px;
+                left: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.3rem;
+            }
+            
+            /* Customized AI Assistant card for mobile */
+            .ai-card .card-icon {
+                height: 80px;
+                font-size: 2rem;
+            }
+            
+            .ai-card .card-content {
+                padding: 15px;
+            }
+            
+            .ai-card .card-content h3 {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+            
+            .ai-card .card-content p {
+                font-size: 0.85rem;
             }
         }
         
@@ -1744,7 +1869,7 @@
         <!-- Auth Section -->
         <div class="auth-section" id="auth-section">
             <div class="logo">
-                <h1> <img src="favicon1.ico" alt="logo" style="height: 60px; vertical-align: -7px;">otify</h1>
+                <<h1> <img src="favicon1.ico" alt="logo.png" style="height: 60px; vertical-align: -7px;">otify</h1>
                 <p>Your Ultimate College Study Companion</p>
             </div>
             
@@ -1894,14 +2019,29 @@
         
         <!-- Dashboard -->
         <div class="dashboard" id="dashboard">
-            <div class="sidebar">
+            <!-- Mobile Hamburger Menu Button -->
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Sidebar Overlay (for mobile) -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            
+            <div class="sidebar" id="sidebar">
+                <!-- Mobile Close Button -->
+                <button class="sidebar-close-btn" id="sidebar-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                
                 <div class="sidebar-header">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                    <div>
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 id="sidebar-username">John Doe</h3>
+                        <p id="sidebar-year">II Year</p>
+                        <p id="sidebar-department">CSE</p>
                     </div>
-                    <h3 id="sidebar-username">John Doe</h3>
-                    <p id="sidebar-year">II Year</p>
-                    <p id="sidebar-department">CSE</p>
                 </div>
                 
                 <ul class="sidebar-menu">
@@ -3000,6 +3140,11 @@
                     if (pageId === 'groups-page') {
                         loadGroups();
                     }
+                    
+                    // Close sidebar on mobile after selecting an item
+                    if (window.innerWidth <= 768) {
+                        closeMobileSidebar();
+                    }
                 });
             });
             
@@ -3012,6 +3157,11 @@
             // AI Assistant from sidebar
             document.getElementById('ai-assistant-sidebar').addEventListener('click', function() {
                 document.getElementById('chat-container').style.display = 'block';
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    closeMobileSidebar();
+                }
             });
             
             // Back buttons
@@ -3020,6 +3170,28 @@
             document.getElementById('back-to-dashboard-notes').addEventListener('click', backToDashboard);
             document.getElementById('back-to-dashboard-schedule').addEventListener('click', backToDashboard);
             document.getElementById('back-to-dashboard-settings').addEventListener('click', backToDashboard);
+            
+            // Mobile sidebar toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+            
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
+            
+            sidebarOverlay.addEventListener('click', closeMobileSidebar);
+            
+            function closeMobileSidebar() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
         }
         
         function backToDashboard() {
@@ -3748,7 +3920,7 @@
                 }
                 
                 // Delete from department files
-                const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
+                const deptFilesRef = database.ref(`departmentFiles/${department}/${year}/${subject}`);
                 
                 deptFilesRef.once("value", snapshot => {
                     if (snapshot.exists()) {
