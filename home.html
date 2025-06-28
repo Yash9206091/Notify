@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notify</title>
     <link rel="icon" href="favicon1.ico" type="image/x-icon">
-    <!-- <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -29,6 +28,11 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s ease;
             --sidebar-width: 280px;
+            --csds-admin: #7209b7;
+            --cse-admin: #4361ee;
+            --aiml-admin: #f72585;
+            --cys-admin: #3a0ca3;
+            --iot-admin: #4cc9f0;
         }
 
         /* Dark theme variables */
@@ -1807,16 +1811,40 @@
             z-index: 2;
         }
         
+        /* Department-specific admin indicators */
         .admin-indicator {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: var(--warning);
-            color: var(--dark);
             padding: 3px 8px;
             border-radius: 10px;
             font-size: 0.7rem;
             font-weight: 600;
+        }
+        
+        .admin-csds {
+            background: var(--csds-admin);
+            color: white;
+        }
+        
+        .admin-cse {
+            background: var(--cse-admin);
+            color: white;
+        }
+        
+        .admin-aiml {
+            background: var(--aiml-admin);
+            color: white;
+        }
+        
+        .admin-cys {
+            background: var(--cys-admin);
+            color: white;
+        }
+        
+        .admin-iot {
+            background: var(--iot-admin);
+            color: white;
         }
         
         .file-type-badge {
@@ -1828,6 +1856,36 @@
             font-weight: 500;
             display: inline-block;
             margin-top: 5px;
+        }
+        
+        /* Admin badge in sidebar */
+        .admin-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: var(--warning);
+            color: var(--dark);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Admin notification */
+        .admin-notification {
+            background: var(--warning);
+            color: var(--dark);
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-notification i {
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -1869,7 +1927,7 @@
         <!-- Auth Section -->
         <div class="auth-section" id="auth-section">
             <div class="logo">
-                <<h1> <img src="favicon1.ico" alt="logo.png" style="height: 60px; vertical-align: -7px;">otify</h1>
+                <h1> <img src="favicon1.ico" alt="logo.png" style="height: 60px; vertical-align: -7px;">otify</h1>
                 <p>Your Ultimate College Study Companion</p>
             </div>
             
@@ -2446,6 +2504,11 @@
                         <button class="btn btn-primary" id="upload-btn">Select File</button>
                         <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
                         <div id="selected-file-name" style="margin-top: 15px; font-weight: 500; color: var(--primary);"></div>
+                        <!-- Admin notification -->
+                        <div id="admin-upload-notification" style="display: none;" class="admin-notification">
+                            <i class="fas fa-crown"></i>
+                            <span>You have admin privileges to upload files for your department</span>
+                        </div>
                     </div>
                     
                     <h3>Available Study Materials</h3>
@@ -3679,8 +3742,9 @@
                 
                 const subject = document.getElementById('subject-name').textContent.toLowerCase();
                 
-                // Check if user is admincsds
-                if (currentUser.username === 'admincsds') {
+                // Check if user is an admin for their department
+                const adminUsername = getAdminForDepartment(currentUser.department);
+                if (currentUser.username === adminUsername) {
                     // Upload to department files
                     uploadToDepartmentFiles(currentUser, subject, file);
                 } else {
@@ -3688,6 +3752,19 @@
                     uploadToPersonalFiles(currentUser, subject, file);
                 }
             });
+        }
+        
+        // Get admin username for a department
+        function getAdminForDepartment(department) {
+            const adminMap = {
+                'CS-DS': 'admincsds',
+                'CSE': 'admincse',
+                'AIML': 'adminaiml',
+                'CYS': 'admincys',
+                'IOT': 'adminiot',
+                // Add other departments as needed
+            };
+            return adminMap[department] || '';
         }
         
         // Upload file to department files (admin only)
@@ -3859,12 +3936,20 @@
                 
                 // Display all files
                 allFiles.forEach(file => {
-                    const isDepartmentFile = file.uploadedBy === 'admincsds';
+                    const isDepartmentFile = file.uploadedBy && file.uploadedBy.startsWith('admin');
                     
                     const fileCard = document.createElement('div');
                     fileCard.className = 'file-card';
                     fileCard.setAttribute('data-file-id', file.id);
                     fileCard.setAttribute('data-file-source', isDepartmentFile ? 'department' : 'personal');
+                    
+                    // Determine admin badge class
+                    let adminClass = '';
+                    if (file.uploadedBy === 'admincsds') adminClass = 'admin-csds';
+                    else if (file.uploadedBy === 'admincse') adminClass = 'admin-cse';
+                    else if (file.uploadedBy === 'adminaiml') adminClass = 'admin-aiml';
+                    else if (file.uploadedBy === 'admincys') adminClass = 'admin-cys';
+                    else if (file.uploadedBy === 'adminiot') adminClass = 'admin-iot';
                     
                     fileCard.innerHTML = `
                         <div class="file-icon">
@@ -3877,7 +3962,7 @@
                                 <span>${file.size}</span>
                             </div>
                             ${isDepartmentFile ? '<div class="department-badge">Department File</div>' : ''}
-                            ${file.uploadedBy === 'admincsds' ? '<div class="admin-indicator">Admin</div>' : ''}
+                            ${file.uploadedBy && adminClass ? `<div class="admin-indicator ${adminClass}">${file.uploadedBy}</div>` : ''}
                             <div class="file-actions">
                                 <button class="file-action download">
                                     <i class="fas fa-download"></i> Download
@@ -3897,6 +3982,15 @@
                     });
                 });
             });
+            
+            // Show admin notification if user is admin
+            const adminUsername = getAdminForDepartment(currentUser.department);
+            const adminNotification = document.getElementById('admin-upload-notification');
+            if (currentUser.username === adminUsername) {
+                adminNotification.style.display = 'flex';
+            } else {
+                adminNotification.style.display = 'none';
+            }
         }
         
         // Get file icon based on file type
@@ -3914,13 +4008,14 @@
             
             if (isDepartmentFile) {
                 // Only admin can delete department files
-                if (currentUser.username !== 'admincsds') {
+                const adminUsername = getAdminForDepartment(currentUser.department);
+                if (currentUser.username !== adminUsername) {
                     showNotification('Only admin can delete department files', false);
                     return;
                 }
                 
                 // Delete from department files
-                const deptFilesRef = database.ref(`departmentFiles/${department}/${year}/${subject}`);
+                const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
                 
                 deptFilesRef.once("value", snapshot => {
                     if (snapshot.exists()) {
@@ -4346,11 +4441,15 @@
                 
                 showNotification(`Welcome back, ${currentUser.username}!`);
                 
-                // Add admin indicator if user is admincsds
-                if (currentUser.username === 'admincsds') {
+                // Add admin indicator if user is an admin
+                const adminUsername = getAdminForDepartment(currentUser.department);
+                if (currentUser.username === adminUsername) {
                     const avatar = document.querySelector('.user-avatar');
                     if (avatar) {
-                        avatar.innerHTML += '<div class="admin-indicator">Admin</div>';
+                        const adminBadge = document.createElement('div');
+                        adminBadge.className = 'admin-badge';
+                        adminBadge.textContent = 'Admin';
+                        avatar.appendChild(adminBadge);
                     }
                 }
             }
@@ -4391,7 +4490,7 @@
                             username: 'admincsds',
                             email: 'admincsds@gmail.com',
                             year: 'IV',
-                            department: 'CSE',
+                            department: 'CS-DS',
                             section: 'B',
                             password: 'password',
                             joined: new Date().toISOString(),
@@ -4415,6 +4514,33 @@
                         },
                         {
                             id: '3',
+                            username: 'admincse',
+                            email: 'admincse@gmail.com',
+                            year: 'IV',
+                            department: 'CSE',
+                            section: 'B',
+                            password: 'password',
+                            joined: new Date().toISOString(),
+                            isAdmin: true,
+                            lastLogin: Date.now(),
+                            preferences: {
+                                darkMode: false,
+                                notifications: true,
+                                answerLength: 4
+                            },
+                            aiChatHistory: [],
+                            notes: [],
+                            subjectFiles: {
+                                math: [],
+                                physics: [],
+                                chemistry: [],
+                                biology: [],
+                                computer: [],
+                                english: []
+                            }
+                        },
+                        {
+                            id: '4',
                             username: 'jane',
                             email: 'jane@gmail.com',
                             year: 'II',
@@ -4441,7 +4567,7 @@
                             }
                         },
                         {
-                            id: '4',
+                            id: '5',
                             username: 'mike',
                             email: 'mike@gmail.com',
                             year: 'III',
