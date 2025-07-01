@@ -1887,6 +1887,42 @@
         .admin-notification i {
             margin-right: 8px;
         }
+
+        /* NEW STYLES FOR PROGRESS AND PREVIEW */
+        .progress-container {
+            margin-top: 15px;
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            line-height: 20px;
+        }
+        
+        .file-preview {
+            max-width: 200px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .file-preview img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        
+        .file-actions .download {
+            background: var(--success);
+        }
     </style>
 </head>
 <body>
@@ -2284,52 +2320,15 @@
                         <p>Drag & drop your files here or click to browse</p>
                         <button class="btn btn-primary" id="notes-upload-btn">Select File</button>
                         <input type="file" id="notes-file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
+                        <div class="progress-container" id="notes-progress-container">
+                            <div class="progress-bar" id="notes-progress-bar">0%</div>
+                        </div>
+                        <div class="file-preview" id="notes-file-preview"></div>
                     </div>
                     
                     <h3>Your Study Notes</h3>
                     <div class="subject-files" id="notes-files">
                         <!-- Notes will be populated here -->
-                        <div class="file-card">
-                            <div class="file-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div class="file-content">
-                                <h4>Calculus Notes.pdf</h4>
-                                <div class="file-meta">
-                                    <span>PDF</span>
-                                    <span>2.4 MB</span>
-                                </div>
-                                <div class="file-actions">
-                                    <button class="file-action download">
-                                        <i class="fas fa-download"></i> Download
-                                    </button>
-                                    <button class="file-action delete">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="file-card">
-                            <div class="file-icon">
-                                <i class="fas fa-file-word"></i>
-                            </div>
-                            <div class="file-content">
-                                <h4>Physics Formulas.docx</h4>
-                                <div class="file-meta">
-                                    <span>DOCX</span>
-                                    <span>1.8 MB</span>
-                                </div>
-                                <div class="file-actions">
-                                    <button class="file-action download">
-                                        <i class="fas fa-download"></i> Download
-                                    </button>
-                                    <button class="file-action delete">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -2502,8 +2501,11 @@
                         <h3>Upload Study Materials</h3>
                         <p>Drag & drop your files here or click to browse</p>
                         <button class="btn btn-primary" id="upload-btn">Select File</button>
-                        <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx">
-                        <div id="selected-file-name" style="margin-top: 15px; font-weight: 500; color: var(--primary);"></div>
+                        <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+                        <div class="progress-container" id="progress-container">
+                            <div class="progress-bar" id="progress-bar">0%</div>
+                        </div>
+                        <div class="file-preview" id="file-preview"></div>
                         <!-- Admin notification -->
                         <div id="admin-upload-notification" style="display: none;" class="admin-notification">
                             <i class="fas fa-crown"></i>
@@ -2540,6 +2542,7 @@
                     <div class="marks-menu" id="marks-menu">
                         <div class="marks-option" data-marks="2">2 Marks</div>
                         <div class="marks-option" data-marks="4">4 Marks</div>
+                        <极速赛车开奖直播官网
                         <div class="marks-option" data-marks="8">8 Marks</div>
                         <div class="marks-option" data-marks="10">10 Marks</div>
                     </div>
@@ -2558,8 +2561,8 @@
         // API Key for Gemini
         const GEMINI_API_KEY = 'AIzaSyBeYmFQLyhoTy0KnDBqbNRL-ir7hdpVglg';
         
-        // Firebase configuration
-        const firebaseConfig = {
+        // Firebase configuration for Authentication and Realtime Database
+        const firebaseAuthConfig = {
             apiKey: "AIzaSyDgRg2Ey2LfIEMYiBImTMoS77pJSa-EzUo",
             authDomain: "employee-performance-sys-2d3f4.firebaseapp.com",
             databaseURL: "https://employee-performance-sys-2d3f4-default-rtdb.firebaseio.com",
@@ -2570,15 +2573,28 @@
             measurementId: "G-8Z6R083573"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // Reference to your database
-        const database = firebase.database();
+        // Firebase configuration for Storage
+        const firebaseStorageConfig = {
+            apiKey: "AIzaSyAHpbYydapE1yckbpATu2EwHy0CnyLy3RE",
+            authDomain: "connectit-23f8c.firebaseapp.com",
+            projectId: "connectit-23f8c",
+            storageBucket: "connectit-23f8c.appspot.com",
+            messagingSenderId: "762787752455",
+            appId: "1:762787752455:web:9f75eb50718b68d38818a2",
+            measurementId: "G-YXQD92YD46"
+        };
+
+        // Initialize Firebase for Authentication and Realtime Database
+        const authApp = firebase.initializeApp(firebaseAuthConfig, "authApp");
+        const database = authApp.database();
         const usersRef = database.ref("users");
         const groupsRef = database.ref("groups");
         const messagesRef = database.ref("messages");
         const departmentFilesRef = database.ref("departmentFiles");
+        
+        // Initialize Firebase for Storage
+        const storageApp = firebase.initializeApp(firebaseStorageConfig, "storageApp");
+        const storage = storageApp.storage();
         
         // Department and year subject mapping
         const departmentSubjects = {
@@ -3167,6 +3183,17 @@
                     });
             });
         }
+        function getAdminForDepartment(department) {
+            // Map department to admin username
+            const adminMap = {
+                'CS-DS': 'admincsds',
+                'CSE': 'admincse',
+                'AIML': 'adminaiml',
+                'CYS': 'admincys',
+                'IOT': 'adminiot'
+            };
+            return adminMap[department] || null;
+        }
         
         // Add admin badge to avatar
         function addAdminBadge(user) {
@@ -3351,8 +3378,12 @@
                     document.getElementById('subject-name').textContent = subject.name;
                     document.getElementById('subject-icon').className = subject.icon;
                     
-                    // Clear selected file name display
-                    document.getElementById('selected-file-name').textContent = '';
+                    // Clear progress and preview
+                    document.getElementById('progress-bar').style.width = '0%';
+                    document.getElementById('progress-bar').textContent = '0%';
+                    document.getElementById('progress-container').style.display = 'none';
+                    document.getElementById('file-preview').style.display = 'none';
+                    document.getElementById('file-preview').innerHTML = '';
                     
                     // Load subject files
                     loadSubjectFiles(subject.name.toLowerCase());
@@ -3480,7 +3511,7 @@
                     groupCard.className = 'group-card';
                     groupCard.setAttribute('data-group-id', group.id);
                     groupCard.innerHTML = `
-                        <div class="group-icon">
+                        <div class极速赛车开奖直播官网
                             <i class="fas fa-users"></i>
                         </div>
                         <h3>${group.name}</h3>
@@ -3747,6 +3778,9 @@
             // Subject file upload
             const uploadBtn = document.getElementById('upload-btn');
             const fileUpload = document.getElementById('file-upload');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const filePreview = document.getElementById('file-preview');
             
             uploadBtn.addEventListener('click', () => {
                 fileUpload.click();
@@ -3756,8 +3790,13 @@
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                // Show the file name in the upload area
-                document.getElementById('selected-file-name').textContent = `Selected: ${file.name}`;
+                // Show file preview
+                showFilePreview(file, filePreview);
+                
+                // Show progress bar
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressBar.textContent = '0%';
                 
                 // Save to user's subject files
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -3769,110 +3808,499 @@
                 const adminUsername = getAdminForDepartment(currentUser.department);
                 if (currentUser.username === adminUsername) {
                     // Upload to department files
-                    uploadToDepartmentFiles(currentUser, subject, file);
+                    uploadToDepartmentFiles(currentUser, subject, file, progressBar);
                 } else {
                     // Regular user upload
-                    uploadToPersonalFiles(currentUser, subject, file);
+                    uploadToPersonalFiles(currentUser, subject, file, progressBar);
                 }
+            });
+            
+            // Notes file upload
+            const notesUploadBtn = document.getElementById('notes-upload-btn');
+            const notesFileUpload = document.getElementById('notes-file-upload');
+            const notesProgressContainer = document.getElementById('notes-progress-container');
+            const notesProgressBar = document.getElementById('notes-progress-bar');
+            const notesFilePreview = document.getElementById('notes-file-preview');
+            
+            notesUploadBtn.addEventListener('click', () => {
+                notesFileUpload.click();
+            });
+            
+            notesFileUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Show file preview
+                showFilePreview(file, notesFilePreview);
+                
+                // Show progress bar
+                notesProgressContainer.style.display = 'block';
+                notesProgressBar.style.width = '0%';
+                notesProgressBar.textContent = '0%';
+                
+                // Save to user's notes
+                uploadToNotes(file, notesProgressBar);
             });
         }
         
-        // Get admin username for a department
-        function getAdminForDepartment(department) {
-            const adminMap = {
-                'CS-DS': 'admincsds',
-                'CSE': 'admincse',
-                'AIML': 'adminaiml',
-                'CYS': 'admincys',
-                'IOT': 'adminiot',
-                // Add other departments as needed
-            };
-            return adminMap[department] || '';
+        // Show file preview
+        function showFilePreview(file, previewContainer) {
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'block';
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                previewContainer.appendChild(img);
+            } else {
+                const fileInfo = document.createElement('div');
+                fileInfo.innerHTML = `
+                    <div><strong>${file.name}</strong></div>
+                    <div>Type: ${file.type || 'Unknown'}</div>
+                    <div>Size: ${formatFileSize(file.size)}</div>
+                `;
+                previewContainer.appendChild(fileInfo);
+            }
         }
         
         // Upload file to department files (admin only)
-        function uploadToDepartmentFiles(currentUser, subject, file) {
+        function uploadToDepartmentFiles(currentUser, subject, file, progressBar) {
             const department = currentUser.department;
             const year = currentUser.year;
             
-            const newFile = {
-                id: Date.now().toString(),
-                name: file.name,
-                type: file.type,
-                size: formatFileSize(file.size),
-                uploadedAt: new Date().toISOString(),
-                uploadedBy: currentUser.username,
-                department: department,
-                year: year,
-                subject: subject
-            };
+            // Create a storage reference
+            const storagePath = `departmentFiles/${department}/${year}/${subject}/${file.name}`;
+            const storageRef = storage.ref().child(storagePath);
             
-            // Create a reference to department files for this subject
-            const deptFilesRef = database.ref(`departmentFiles/${department}/${year}/${subject}`);
+            // Upload file to Firebase Storage
+            const uploadTask = storageRef.put(file);
             
-            // Get existing files and add new one
-            deptFilesRef.once("value", snapshot => {
-                let files = [];
-                if (snapshot.exists()) {
-                    files = snapshot.val();
-                }
-                
-                files.push(newFile);
-                
-                // Save to Firebase
-                deptFilesRef.set(files)
-                    .then(() => {
-                        showNotification(`File "${file.name}" added to department files!`);
+            // Listen for state changes, errors, and completion
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${Math.round(progress)}%`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload error:', error);
+                    showNotification('File upload failed: ' + error.message, false);
+                },
+                () => {
+                    // Handle successful uploads
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Create file metadata
+                        const newFile = {
+                            id: Date.now().toString(),
+                            name: file.name,
+                            type: file.type,
+                            size: formatFileSize(file.size),
+                            uploadedAt: new Date().toISOString(),
+                            uploadedBy: currentUser.username,
+                            department: department,
+                            year: year,
+                            subject: subject,
+                            downloadURL: downloadURL,
+                            storagePath: storagePath
+                        };
                         
-                        // Reload subject files
-                        loadSubjectFiles(subject);
+                        // Create a reference to department files for this subject
+                        const deptFilesRef = database.ref(`departmentFiles/${department}/${year}/${subject}`);
                         
-                        // Update all users in department
-                        notifyDepartmentUsers(department, year);
-                    })
-                    .catch(error => {
-                        showNotification('Error saving department file: ' + error.message, false);
+                        // Get existing files and add new one
+                        deptFilesRef.once("value", snapshot => {
+                            let files = [];
+                            if (snapshot.exists()) {
+                                files = snapshot.val();
+                            }
+                            
+                            files.push(newFile);
+                            
+                            // Save to Firebase
+                            deptFilesRef.set(files)
+                                .then(() => {
+                                    showNotification(`File "${file.name}" added to department files!`);
+                                    
+                                    // Reload subject files
+                                    loadSubjectFiles(subject);
+                                    
+                                    // Update all users in department
+                                    notifyDepartmentUsers(department, year);
+                                })
+                                .catch(error => {
+                                    showNotification('Error saving department file: ' + error.message, false);
+                                });
+                        });
                     });
-            });
+                }
+            );
         }
         
         // Upload file to personal files
-        function uploadToPersonalFiles(currentUser, subject, file) {
-            if (!currentUser.subjectFiles) {
-                currentUser.subjectFiles = {};
-            }
+        function uploadToPersonalFiles(currentUser, subject, file, progressBar) {
+            // Create a storage reference
+            const storagePath = `userFiles/${currentUser.id}/${subject}/${file.name}`;
+            const storageRef = storage.ref().child(storagePath);  // Fixed line
             
-            if (!currentUser.subjectFiles[subject]) {
-                currentUser.subjectFiles[subject] = [];
-            }
+            // Upload file to Firebase Storage
+            const uploadTask = storageRef.put(file);
             
-            const newFile = {
-                id: Date.now().toString(),
-                name: file.name,
-                type: file.type,
-                size: formatFileSize(file.size),
-                uploadedAt: new Date().toISOString()
-            };
+            // Listen for state changes, errors, and completion
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${Math.round(progress)}%`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload error:', error);
+                    showNotification('File upload failed: ' + error.message, false);
+                },
+                () => {
+                    // Handle successful uploads
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Create file metadata
+                        const newFile = {
+                            id: Date.now().toString(),
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            formattedSize: formatFileSize(file.size),
+                            uploadedAt: new Date().toISOString(),
+                            downloadURL: downloadURL,
+                            storagePath: storagePath
+                        };
+                        
+                        if (!currentUser.subjectFiles) {
+                            currentUser.subjectFiles = {};
+                        }
+                        
+                        if (!currentUser.subjectFiles[subject]) {
+                            currentUser.subjectFiles[subject] = [];
+                        }
+                        
+                        currentUser.subjectFiles[subject].push(newFile);
+                        
+                        // Update user in localStorage
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        
+                        // Update user in Firebase
+                        usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
+                            .then(() => {
+                                showNotification(`File "${file.name}" saved successfully!`);
+                                
+                                // Update subject files display
+                                loadSubjectFiles(subject);
+                                
+                                // Update card badge
+                                updateSubjectCardBadges();
+                            })
+                            .catch(error => {
+                                showNotification('Error saving personal file: ' + error.message, false);
+                            });
+                    });
+                }
+            );
+        }
+        
+        // Upload file to notes
+        function uploadToNotes(file, progressBar) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
             
-            currentUser.subjectFiles[subject].push(newFile);
+            // Create a storage reference
+            const storagePath = `userNotes/${currentUser.id}/${file.name}`;
+            const storageRef = storage.ref().child(storagePath);
             
-            // Update user in localStorage
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // Upload file to Firebase Storage
+            const uploadTask = storageRef.put(file);
             
-            // Update user in Firebase
-            usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
-                .then(() => {
-                    showNotification(`File "${file.name}" saved successfully!`);
+            // Listen for state changes, errors, and completion
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${Math.round(progress)}%`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload error:', error);
+                    showNotification('File upload failed: ' + error.message, false);
+                },
+                () => {
+                    // Handle successful uploads
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Create note metadata
+                        const newNote = {
+                            id: Date.now().toString(),
+                            name: file.name,
+                            type: file.type,
+                            size: formatFileSize(file.size),
+                            uploadedAt: new Date().toISOString(),
+                            downloadURL: downloadURL,
+                            storagePath: storagePath
+                        };
+                        
+                        if (!currentUser.notes) {
+                            currentUser.notes = [];
+                        }
+                        
+                        currentUser.notes.push(newNote);
+                        
+                        // Update user in localStorage
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        
+                        // Update user in Firebase
+                        usersRef.child(currentUser.id).update({ notes: currentUser.notes })
+                            .then(() => {
+                                showNotification(`Note "${file.name}" saved successfully!`);
+                                
+                                // Update notes display
+                                loadNotes();
+                            })
+                            .catch(error => {
+                                showNotification('Error saving note: ' + error.message, false);
+                            });
+                    });
+                }
+            );
+        }
+        
+        // Load subject files
+        function loadSubjectFiles(subject) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            const filesContainer = document.getElementById('subject-files');
+            filesContainer.innerHTML = '';
+            
+            // Get personal files
+            const personalFiles = currentUser.subjectFiles && currentUser.subjectFiles[subject] || [];
+            
+            // Get department files for this subject
+            departmentFilesRef.child(`${currentUser.department}/${currentUser.year}/${subject}`).once("value", snapshot => {
+                const departmentFiles = snapshot.exists() ? snapshot.val() : [];
+                
+                // Combine personal and department files
+                const allFiles = [...personalFiles, ...departmentFiles];
+                
+                if (allFiles.length === 0) {
+                    filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
+                    return;
+                }
+                
+                // Display all files
+                allFiles.forEach(file => {
+                    const isDepartmentFile = file.uploadedBy && file.uploadedBy.startsWith('admin');
                     
-                    // Update subject files display
-                    loadSubjectFiles(subject);
+                    const fileCard = document.createElement('div');
+                    fileCard.className = 'file-card';
+                    fileCard.setAttribute('data-file-id', file.id);
+                    fileCard.setAttribute('data-file-source', isDepartmentFile ? 'department' : 'personal');
                     
-                    // Update card badge
-                    updateSubjectCardBadges();
-                })
-                .catch(error => {
-                    showNotification('Error saving personal file: ' + error.message, false);
+                    // Determine admin badge class
+                    let adminClass = '';
+                    if (file.uploadedBy === 'admincsds') adminClass = 'admin-csds';
+                    else if (file.uploadedBy === 'admincse') adminClass = 'admin-cse';
+                    else if (file.uploadedBy === 'adminaiml') adminClass = 'admin-aiml';
+                    else if (file.uploadedBy === 'admincys') adminClass = 'admin-cys';
+                    else if (file.uploadedBy === 'adminiot') adminClass = 'admin-iot';
+                    
+                    fileCard.innerHTML = `
+                        <div class="file-icon">
+                            <i class="${getFileIcon(file.type)}"></i>
+                        </div>
+                        <div class="file-content">
+                            <h4>${file.name}</h4>
+                            <div class="file-meta">
+                                <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
+                                <span>${file.size}</span>
+                            </div>
+                            ${isDepartmentFile ? '<div class="department-badge">Department File</div>' : ''}
+                            ${file.uploadedBy && adminClass ? `<div class="admin-indicator ${adminClass}">${file.uploadedBy}</div>` : ''}
+                            <div class="file-actions">
+                                <a href="${file.downloadURL}" target="_blank" class="file-action download">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <button class="file-action delete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    filesContainer.appendChild(fileCard);
+                    
+                    // Add delete event
+                    const deleteBtn = fileCard.querySelector('.file-action.delete');
+                    deleteBtn.addEventListener('click', () => {
+                        deleteFile(file, isDepartmentFile, subject);
+                    });
                 });
+            });
+            
+            // Show admin notification if user is admin
+            const adminUsername = getAdminForDepartment(currentUser.department);
+            const adminNotification = document.getElementById('admin-upload-notification');
+            if (currentUser.username === adminUsername) {
+                adminNotification.style.display = 'flex';
+            } else {
+                adminNotification.style.display = 'none';
+            }
+        }
+        
+        // Load notes
+        function loadNotes() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            const notesContainer = document.getElementById('notes-files');
+            notesContainer.innerHTML = '';
+            
+            const notes = currentUser.notes || [];
+            
+            if (notes.length === 0) {
+                notesContainer.innerHTML = '<p>No notes available. Upload some study notes!</p>';
+                return;
+            }
+            
+            // Display all notes
+            notes.forEach(note => {
+                const noteCard = document.createElement('div');
+                noteCard.className = 'file-card';
+                noteCard.setAttribute('data-note-id', note.id);
+                
+                noteCard.innerHTML = `
+                    <div class="file-icon">
+                        <i class="${getFileIcon(note.type)}"></i>
+                    </div>
+                    <div class="file-content">
+                        <h4>${note.name}</h4>
+                        <div class="file-meta">
+                            <span>${note.type.split('/')[1] ? note.type.split('/')[1].toUpperCase() : 'FILE'}</span>
+                            <span>${note.size}</span>
+                        </div>
+                        <div class="file-actions">
+                            <a href="${note.downloadURL}" target="_blank" class="file-action download">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                            <button class="file-action delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                notesContainer.appendChild(noteCard);
+                
+                // Add delete event
+                const deleteBtn = noteCard.querySelector('.file-action.delete');
+                deleteBtn.addEventListener('click', () => {
+                    deleteNote(note);
+                });
+            });
+        }
+        
+        // Get file icon based on file type
+        function getFileIcon(fileType) {
+            if (fileType.includes('pdf')) return 'fas fa-file-pdf';
+            if (fileType.includes('word')) return 'fas fa-file-word';
+            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fas fa-file-powerpoint';
+            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel';
+            return 'fas fa-file';
+        }
+        
+        // Delete a file
+        function deleteFile(file, isDepartmentFile, subject) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            // Delete from Firebase Storage
+            const storageRef = storage.ref().child(file.storagePath);
+            storageRef.delete().then(() => {
+                // File deleted successfully
+                if (isDepartmentFile) {
+                    // Only admin can delete department files
+                    const adminUsername = getAdminForDepartment(currentUser.department);
+                    if (currentUser.username !== adminUsername) {
+                        showNotification('Only admin can delete department files', false);
+                        return;
+                    }
+                    
+                    // Delete from department files
+                    const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
+                    
+                    deptFilesRef.once("value", snapshot => {
+                        if (snapshot.exists()) {
+                            let files = snapshot.val();
+                            files = files.filter(f => f.id !== file.id);
+                            
+                            deptFilesRef.set(files)
+                                .then(() => {
+                                    showNotification(`File "${file.name}" deleted from department files`);
+                                    loadSubjectFiles(subject);
+                                    notifyDepartmentUsers(currentUser.department, currentUser.year);
+                                })
+                                .catch(error => {
+                                    showNotification('Error deleting file: ' + error.message, false);
+                                });
+                        }
+                    });
+                } else {
+                    // Delete personal file
+                    if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject]) {
+                        return;
+                    }
+                    
+                    currentUser.subjectFiles[subject] = currentUser.subjectFiles[subject].filter(f => f.id !== file.id);
+                    
+                    // Update user in localStorage
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Update user in Firebase
+                    usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
+                        .then(() => {
+                            showNotification(`File "${file.name}" deleted`);
+                            loadSubjectFiles(subject);
+                            updateSubjectCardBadges();
+                        })
+                        .catch(error => {
+                            showNotification('Error deleting file: ' + error.message, false);
+                        });
+                }
+            }).catch((error) => {
+                showNotification('Error deleting file from storage: ' + error.message, false);
+            });
+        }
+        
+        // Delete a note
+        function deleteNote(note) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || !currentUser.notes) return;
+            
+            // Delete from Firebase Storage
+            const storageRef = storage.ref().child(note.storagePath);
+            storageRef.delete().then(() => {
+                // Note deleted from storage
+                currentUser.notes = currentUser.notes.filter(n => n.id !== note.id);
+                
+                // Update user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update user in Firebase
+                usersRef.child(currentUser.id).update({ notes: currentUser.notes })
+                    .then(() => {
+                        showNotification(`Note "${note.name}" deleted`);
+                        loadNotes();
+                    })
+                    .catch(error => {
+                        showNotification('Error deleting note: ' + error.message, false);
+                    });
+            }).catch((error) => {
+                showNotification('Error deleting note from storage: ' + error.message, false);
+            });
         }
         
         // Notify all users in department about new file
@@ -3932,152 +4360,6 @@
                     });
                 }
             });
-        }
-        
-        // Load subject files
-        function loadSubjectFiles(subject) {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (!currentUser) return;
-            
-            const filesContainer = document.getElementById('subject-files');
-            filesContainer.innerHTML = '';
-            
-            // Get personal files
-            const personalFiles = currentUser.subjectFiles && currentUser.subjectFiles[subject] || [];
-            
-            // Get department files for this subject
-            departmentFilesRef.child(`${currentUser.department}/${currentUser.year}/${subject}`).once("value", snapshot => {
-                const departmentFiles = snapshot.exists() ? snapshot.val() : [];
-                
-                // Combine personal and department files
-                const allFiles = [...personalFiles, ...departmentFiles];
-                
-                if (allFiles.length === 0) {
-                    filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
-                    return;
-                }
-                
-                // Display all files
-                allFiles.forEach(file => {
-                    const isDepartmentFile = file.uploadedBy && file.uploadedBy.startsWith('admin');
-                    
-                    const fileCard = document.createElement('div');
-                    fileCard.className = 'file-card';
-                    fileCard.setAttribute('data-file-id', file.id);
-                    fileCard.setAttribute('data-file-source', isDepartmentFile ? 'department' : 'personal');
-                    
-                    // Determine admin badge class
-                    let adminClass = '';
-                    if (file.uploadedBy === 'admincsds') adminClass = 'admin-csds';
-                    else if (file.uploadedBy === 'admincse') adminClass = 'admin-cse';
-                    else if (file.uploadedBy === 'adminaiml') adminClass = 'admin-aiml';
-                    else if (file.uploadedBy === 'admincys') adminClass = 'admin-cys';
-                    else if (file.uploadedBy === 'adminiot') adminClass = 'admin-iot';
-                    
-                    fileCard.innerHTML = `
-                        <div class="file-icon">
-                            <i class="${getFileIcon(file.type)}"></i>
-                        </div>
-                        <div class="file-content">
-                            <h4>${file.name}</h4>
-                            <div class="file-meta">
-                                <span>${file.type.split('/')[1] ? file.type.split('/')[1].toUpperCase() : 'FILE'}</span>
-                                <span>${file.size}</span>
-                            </div>
-                            ${isDepartmentFile ? '<div class="department-badge">Department File</div>' : ''}
-                            ${file.uploadedBy && adminClass ? `<div class="admin-indicator ${adminClass}">${file.uploadedBy}</div>` : ''}
-                            <div class="file-actions">
-                                <button class="file-action download">
-                                    <i class="fas fa-download"></i> Download
-                                </button>
-                                <button class="file-action delete">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    filesContainer.appendChild(fileCard);
-                    
-                    // Add delete event
-                    const deleteBtn = fileCard.querySelector('.file-action.delete');
-                    deleteBtn.addEventListener('click', () => {
-                        deleteFile(file, isDepartmentFile, subject);
-                    });
-                });
-            });
-            
-            // Show admin notification if user is admin
-            const adminUsername = getAdminForDepartment(currentUser.department);
-            const adminNotification = document.getElementById('admin-upload-notification');
-            if (currentUser.username === adminUsername) {
-                adminNotification.style.display = 'flex';
-            } else {
-                adminNotification.style.display = 'none';
-            }
-        }
-        
-        // Get file icon based on file type
-        function getFileIcon(fileType) {
-            if (fileType.includes('pdf')) return 'fas fa-file-pdf';
-            if (fileType.includes('word')) return 'fas fa-file-word';
-            if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fas fa-file-powerpoint';
-            if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel';
-            return 'fas fa-file';
-        }
-        
-        // Delete a file
-        function deleteFile(file, isDepartmentFile, subject) {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            
-            if (isDepartmentFile) {
-                // Only admin can delete department files
-                const adminUsername = getAdminForDepartment(currentUser.department);
-                if (currentUser.username !== adminUsername) {
-                    showNotification('Only admin can delete department files', false);
-                    return;
-                }
-                
-                // Delete from department files
-                const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
-                
-                deptFilesRef.once("value", snapshot => {
-                    if (snapshot.exists()) {
-                        let files = snapshot.val();
-                        files = files.filter(f => f.id !== file.id);
-                        
-                        deptFilesRef.set(files)
-                            .then(() => {
-                                showNotification(`File "${file.name}" deleted from department files`);
-                                loadSubjectFiles(subject);
-                                notifyDepartmentUsers(currentUser.department, currentUser.year);
-                            })
-                            .catch(error => {
-                                showNotification('Error deleting file: ' + error.message, false);
-                            });
-                    }
-                });
-            } else {
-                // Delete personal file
-                if (!currentUser.subjectFiles || !currentUser.subjectFiles[subject]) {
-                    return;
-                }
-                
-                currentUser.subjectFiles[subject] = currentUser.subjectFiles[subject].filter(f => f.id !== file.id);
-                
-                // Update user in localStorage
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Update user in Firebase
-                usersRef.child(currentUser.id).update({ subjectFiles: currentUser.subjectFiles })
-                    .then(() => {
-                        showNotification(`File "${file.name}" deleted`);
-                        loadSubjectFiles(subject);
-                        updateSubjectCardBadges();
-                    })
-                    .catch(error => {
-                        showNotification('Error deleting file: ' + error.message, false);
-                    });
-            }
         }
         
         // Update subject card badges
