@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback for Notify</title>
+    <link rel="icon" href="favicon1.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Light theme */
+            --light-bg: #f8f9fa;
+            --light-card-bg: #ffffff;
+            --light-text: #343a40;
+            --light-input-bg: #f1f3f5;
+            --light-border: #dee2e6;
+            --light-primary: #4361ee;
+            --light-hover: #3a56d4;
+            --light-shadow: rgba(0, 0, 0, 0.08);
+            --light-nav-bg: #ffffff;
+            
+            /* Dark theme */
+            --dark-bg: #121826;
+            --dark-card-bg: #1e293b;
+            --dark-text: #e2e8f0;
+            --dark-input-bg: #2d3748;
+            --dark-border: #4a5568;
+            --dark-primary: #6366f1;
+            --dark-hover: #4f46e5;
+            --dark-shadow: rgba(0, 0, 0, 0.3);
+            --dark-nav-bg: #1a2438;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background-color: var(--light-nav-bg);
+            box-shadow: 0 2px 10px var(--light-shadow);
+        }
+
+        .dark-mode .navbar {
+            background-color: var(--dark-nav-bg);
+            box-shadow: 0 2px 10px var(--dark-shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light-primary);
+            text-decoration: none;
+        }
+
+        .dark-mode .logo {
+            color: var(--dark-primary);
+        }
+
+        .logo i {
+            color: #7209b7;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--light-text);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .dark-mode .theme-toggle {
+            color: var(--dark-text);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--light-input-bg);
+        }
+
+        .dark-mode .theme-toggle:hover {
+            background-color: var(--dark-input-bg);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .dark-mode header h1 {
+            background: linear-gradient(45deg, #6366f1, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .dark-mode header p {
+            color: #94a3b8;
+        }
+
+        .card {
+            background-color: var(--light-card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px var(--light-shadow);
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode .card {
+            background-color: var(--dark-card-bg);
+            box-shadow: 0 8px 30px var(--dark-shadow);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4361ee, #3a0ca3, #7209b7);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e63946;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--light-border);
+            border-radius: 10px;
+            background-color: var(--light-input-bg);
+            font-size: 1rem;
+            color: var(--light-text);
+        }
+
+        .dark-mode input, 
+        .dark-mode select, 
+        .dark-mode textarea {
+            border-color: var(--dark-border);
+            background-color: var(--dark-input-bg);
+            color: var(--dark-text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--light-primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .dark-mode input:focus, 
+        .dark-mode select:focus, 
+        .dark-mode textarea:focus {
+            border-color: var(--dark-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 15px;
+            border: 2px solid var(--light-border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            background-color: var(--light-input-bg);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .dark-mode .radio-option label {
+            border-color: var(--dark-border);
+            background-color: var(--dark-input-bg);
+        }
+
+        .radio-option input:checked + label {
+            border-color: var(--light-primary);
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--light-primary);
+        }
+
+        .dark-mode .radio-option input:checked + label {
+            border-color: var(--dark-primary);
+            background-color: rgba(99, 102, 241, 0.15);
+            color: var(--dark-primary);
+        }
+
+        .rating {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .rating input {
+            display: none;
+        }
+
+        .rating label {
+            font-size: 2rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            position: relative;
+        }
+
+        .dark-mode .rating label {
+            color: #4a5568;
+        }
+
+        .rating label:hover {
+            transform: scale(1.2);
+        }
+
+        .rating input:checked ~ label {
+            color: #ffd43b;
+        }
+
+        .rating input:checked + label {
+            color: #ffd43b;
+        }
+
+        .rating label:hover,
+        .rating input:checked + label {
+            color: #ffd43b;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--light-border);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background-color: var(--light-input-bg);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dark-mode .upload-area {
+            border-color: var(--dark-border);
+            background-color: var(--dark-input-bg);
+        }
+
+        .upload-area:hover {
+            border-color: var(--light-primary);
+        }
+
+        .dark-mode .upload-area:hover {
+            border-color: var(--dark-primary);
+        }
+
+        .upload-area i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #adb5bd;
+        }
+
+        .dark-mode .upload-area i {
+            color: #718096;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        button {
+            background-color: var(--light-primary);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .dark-mode button {
+            background-color: var(--dark-primary);
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--light-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.25);
+        }
+
+        .dark-mode button:hover {
+            background-color: var(--dark-hover);
+            box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        button i {
+            margin-right: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+
+        .dark-mode footer {
+            color: #94a3b8;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 8px;
+        }
+
+        .dark-mode .file-preview {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .file-preview i {
+            color: #4361ee;
+        }
+
+        .dark-mode .file-preview i {
+            color: #6366f1;
+        }
+
+        .remove-file {
+            margin-left: auto;
+            cursor: pointer;
+            color: #e63946;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #4caf50;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(200%);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background-color: #e53935;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 25px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .navbar {
+                padding: 15px;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation with Theme Toggle -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <img src="favicon1.ico" alt="logo.png" style="height: 30px; vertical-align: -7px; margin-right: -10px;">
+            otify
+        </a>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Share Your Feedback</h1>
+            <p>Help us improve Notify with your valuable suggestions. We appreciate your input as we work to make Notify the best it can be.</p>
+        </header>
+        
+        <div class="card">
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="john@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">Feedback Type</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="bug" name="feedbackType" value="Bug Report" required>
+                            <label for="bug"><i class="fas fa-bug"></i> Bug Report</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="feature" name="feedbackType" value="Feature Request">
+                            <label for="feature"><i class="fas fa-lightbulb"></i> Feature Request</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="uiux" name="feedbackType" value="UI/UX Suggestion">
+                            <label for="uiux"><i class="fas fa-paint-brush"></i> UI/UX Suggestion</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="content" name="feedbackType" value="Content Suggestion">
+                            <label for="content"><i class="fas fa-file-alt"></i> Content Suggestion</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="other" name="feedbackType" value="Other">
+                            <label for="other"><i class="fas fa-ellipsis-h"></i> Other</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject" class="required">Subject</label>
+                    <input type="text" id="subject" placeholder="Brief description of your feedback" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback" class="required">Detailed Feedback</label>
+                    <textarea id="feedback" placeholder="Please share your thoughts in detail..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Rating (Optional)</label>
+                    <div class="rating">
+                        <input type="radio" id="star1" name="rating" value="1">
+                        <label for="star1">★</label>
+                        <input type="radio" id="star2" name="rating" value="2">
+                        <label for="star2">★</label>
+                        <input type="radio" id="star3" name="rating" value="3">
+                        <label for="star3">★</label>
+                        <input type="radio" id="star4" name="rating" value="4">
+                        <label for="star4">★</label>
+                        <input type="radio" id="star5" name="rating" value="5">
+                        <label for="star5">★</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Screenshot (Optional)</label>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click or drag files to upload</p>
+                        <p class="small">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                    <input type="file" id="screenshot" accept="image/*" hidden>
+                    <div class="file-preview" id="filePreview">
+                        <i class="fas fa-file-image"></i>
+                        <span id="fileName"></span>
+                        <span class="remove-file" id="removeFile">Remove</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="contactPermission">
+                        <label for="contactPermission">Yes, you may contact me regarding this feedback</label>
+                    </div>
+                </div>
+                
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                </button>
+            </form>
+        </div>
+        
+        <footer>
+            <p>Thank you for helping us improve Notify! We appreciate your feedback.</p>
+            <p>© 2023 Notify. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Feedback submitted successfully!</span>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        const fileInput = document.getElementById('screenshot');
+        const uploadArea = document.getElementById('uploadArea');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const removeFile = document.getElementById('removeFile');
+        const notification = document.getElementById('notification');
+        
+        // Initialize theme based on time or saved preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const currentHour = new Date().getHours();
+            
+            if (savedTheme) {
+                document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+                updateIcon();
+            } else {
+                // Apply dark mode after 6PM (18:00)
+                if (currentHour >= 18 || currentHour < 6) {
+                    document.body.classList.add('dark-mode');
+                    updateIcon();
+                }
+            }
+        }
+        
+        // Update theme icon
+        function updateIcon() {
+            if (document.body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+        
+        // Toggle theme on button click
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            updateIcon();
+        });
+        
+        // Set theme based on time
+        function setThemeBasedOnTime() {
+            // Only set by time if no preference is saved
+            if (!localStorage.getItem('theme')) {
+                const now = new Date();
+                const hours = now.getHours();
+                const body = document.body;
+                
+                if (hours >= 18 || hours < 6) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+                updateIcon();
+            }
+        }
+        
+        // Handle file upload
+        function handleFileUpload(file) {
+            fileName.textContent = file.name;
+            filePreview.style.display = 'flex';
+            
+            // Change upload area style
+            uploadArea.innerHTML = '<i class="fas fa-check-circle"></i><p>File uploaded successfully!</p>';
+            uploadArea.style.borderColor = '#2ecc71';
+            uploadArea.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+        }
+        
+        // File input change event
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length > 0) {
+                handleFileUpload(fileInput.files[0]);
+            }
+        });
+        
+        // Remove file
+        removeFile.addEventListener('click', () => {
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            uploadArea.innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click or drag files to upload</p>
+                <p class="small">PNG, JPG, GIF up to 5MB</p>
+            `;
+            uploadArea.style.borderColor = '';
+            uploadArea.style.backgroundColor = '';
+        });
+        
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4361ee';
+            uploadArea.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '';
+            uploadArea.style.backgroundColor = '';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                
+                // Check if file is an image
+                if (!file.type.match('image.*')) {
+                    showNotification('Please upload an image file (PNG, JPG, GIF)', true);
+                    return;
+                }
+                
+                // Check file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('File size exceeds 5MB limit', true);
+                    return;
+                }
+                
+                fileInput.files = e.dataTransfer.files;
+                handleFileUpload(file);
+            }
+        });
+        
+        // Star rating functionality - highlight all stars up to selected
+        const stars = document.querySelectorAll('.rating input');
+        stars.forEach(star => {
+            star.addEventListener('change', function() {
+                const value = parseInt(this.value);
+                
+                // Reset all stars
+                document.querySelectorAll('.rating label').forEach(label => {
+                    label.style.color = '';
+                });
+                
+                // Highlight all stars up to the selected one
+                for (let i = 1; i <= value; i++) {
+                    const starLabel = document.querySelector(`.rating label[for="star${i}"]`);
+                    if (starLabel) {
+                        starLabel.style.color = '#ffd43b';
+                    }
+                }
+            });
+        });
+        
+        // Show notification
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            const text = notification.querySelector('span');
+            
+            text.textContent = message;
+            notification.className = 'notification';
+            
+            if (isError) {
+                notification.classList.add('error');
+                icon.className = 'fas fa-exclamation-circle';
+            } else {
+                icon.className = 'fas fa-check-circle';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Form submission
+        document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Basic validation
+            const subject = document.getElementById('subject').value;
+            const feedback = document.getElementById('feedback').value;
+            const feedbackType = document.querySelector('input[name="feedbackType"]:checked');
+            
+            if (!subject || !feedback || !feedbackType) {
+                showNotification('Please fill in all required fields', true);
+                return;
+            }
+            
+            // Get form data
+            const name = document.getElementById('name').value || 'Anonymous';
+            const email = document.getElementById('email').value || 'No email provided';
+            const contactPermission = document.getElementById('contactPermission').checked ? 'Yes' : 'No';
+            const rating = document.querySelector('input[name="rating"]:checked')?.value || 'Not rated';
+            
+            // Create email body
+            const emailBody = `
+                New Feedback Submission for Notify
+                =================================
+                
+                Name: ${name}
+                Email: ${email}
+                Contact Permission: ${contactPermission}
+                
+                Feedback Type: ${feedbackType.value}
+                Subject: ${subject}
+                
+                Rating: ${rating} star${rating === '1' ? '' : 's'}
+                
+                Detailed Feedback:
+                ${feedback}
+            `;
+            
+            // Create mailto link
+            const mailtoLink = `mailto:notifywebapplilcation@gmail.com?subject=Notify Feedback: ${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            // Show success message
+            showNotification('Feedback submitted successfully! Check your email client to complete submission.');
+            
+            // Reset form
+            setTimeout(() => {
+                document.getElementById('feedbackForm').reset();
+                fileInput.value = '';
+                filePreview.style.display = 'none';
+                uploadArea.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click or drag files to upload</p>
+                    <p class="small">PNG, JPG, GIF up to 5MB</p>
+                `;
+                uploadArea.style.borderColor = '';
+                uploadArea.style.backgroundColor = '';
+                
+                // Reset rating
+                document.querySelectorAll('.rating label').forEach(label => {
+                    label.style.color = '';
+                });
+            }, 1000);
+        });
+        
+        // Initialize theme
+        initTheme();
+        setThemeBasedOnTime();
+        
+        // Update theme every minute to handle time changes
+        setInterval(setThemeBasedOnTime, 60000);
+    </script>
+</body>
+</html>
