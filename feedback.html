@@ -616,6 +616,7 @@
     </div>
 
     <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
         // DOM Elements
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = themeToggle.querySelector('i');
