@@ -411,6 +411,7 @@
     </footer>
 
     <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = themeToggle.querySelector('i');
