@@ -34,6 +34,32 @@
             --cys-admin: #3a0ca3;
             --iot-admin: #4cc9f0;
         }
+        .sidebar-menu a.menu-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background: transparent;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .sidebar-menu a.menu-btn:hover, 
+        .sidebar-menu a.menu-btn:focus {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .sidebar-menu a.menu-btn i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
 
         /* Dark theme variables */
         .dark-theme {
@@ -2163,6 +2189,11 @@
                         <button class="menu-btn" data-page="notes-page">
                             <i class="fas fa-book"></i> My Notes
                         </button>
+                    </li>
+                    <li>
+                        <a class="menu-btn" href="searchVideos.html" target="_blank">
+                            <i class="fas fa-video"></i> Search Videos
+                        </a>
                     </li>
                     <li>
                         <button class="menu-btn" data-page="schedule-page">
