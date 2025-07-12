@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notify - Cozy Videos Search</title>
+  <link rel="icon" href="favicon1.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Base styles and variables */
+    :root {
+      --primary: #ff6b35;
+      --secondary: #ff9e58;
+      --accent: #ffb997;
+      --light: #f9f5f2;
+      --dark: #2c241b;
+      --text: #3a332d;
+      --text-light: #f8f4f0;
+      --card-bg: #ffffff;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      --transition: all 0.3s ease;
+      --border-radius: 12px;
+    }
+
+    .dark-theme {
+      --primary: #ff8c5a;
+      --secondary: #ffb38a;
+      --accent: #ffd0bc;
+      --light: #1f1914;
+      --dark: #0d0a08;
+      --text: #f0e6e0;
+      --text-light: #f8f4f0;
+      --card-bg: #2c241b;
+      --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light);
+      color: var(--text);
+      transition: var(--transition);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Background pattern with animation */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(var(--accent) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.1;
+      z-index: -1;
+      animation: background-move 30s linear infinite;
+    }
+
+    @keyframes background-move {
+      0% { background-position: 0 0; }
+      100% { background-position: 300px 300px; }
+    }
+
+    /* Navigation bar with animation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 5%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(5px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+      transition: var(--transition);
+      animation: nav-appear 0.8s ease-out;
+    }
+
+    @keyframes nav-appear {
+      0% { transform: translateY(-100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .dark-theme nav {
+      background: rgba(44, 36, 27, 0.85);
+      border-bottom: 1px solid rgba(255, 140, 90, 0.1);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: logo-pulse 4s infinite ease-in-out;
+    }
+
+    @keyframes logo-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .logo i {
+      font-size: 1.5rem;
+      color: var(--primary);
+      transition: var(--transition);
+      animation: ring 4s infinite ease-in-out;
+    }
+
+    @keyframes ring {
+      0%, 100% { transform: rotate(0deg); }
+      5%, 15% { transform: rotate(15deg); }
+      10%, 20% { transform: rotate(-15deg); }
+      25% { transform: rotate(0deg); }
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: var(--primary);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+      transition: var(--transition);
+      animation: button-float 3s infinite ease-in-out;
+    }
+
+    @keyframes button-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      animation: none;
+    }
+
+    .theme-toggle i {
+      font-size: 1.1rem;
+      color: white;
+    }
+
+    /* Hero section with animations */
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      max-width: 700px;
+      margin: 0 auto;
+      animation: hero-appear 0.8s ease-out;
+    }
+
+    @keyframes hero-appear {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      margin-bottom: 1.2rem;
+      color: var(--primary);
+      line-height: 1.2;
+      font-weight: 700;
+      animation: title-pulse 6s infinite ease-in-out;
+    }
+
+    @keyframes title-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.9;
+    }
+
+    .dark-theme .hero p {
+      color: var(--text-light);
+      opacity: 0.8;
+    }
+
+    /* Search box with animation */
+    #search-box {
+      display: flex;
+      justify-content: center;
+      margin: 0 auto 3rem;
+      max-width: 600px;
+      position: relative;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      transition: var(--transition);
+      animation: search-appear 0.8s ease-out, search-pulse 4s infinite ease-in-out;
+    }
+
+    @keyframes search-appear {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes search-pulse {
+      0%, 100% { box-shadow: 0 5px 15px rgba(255, 107, 53, 0.1); }
+      50% { box-shadow: 0 5px 20px rgba(255, 107, 53, 0.3); }
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      outline: none;
+      background: white;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    .dark-theme input[type="text"] {
+      background: #352c22;
+      color: var(--text-light);
+    }
+
+    input[type="text"]:focus {
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    input[type="text"]::placeholder {
+      color: #a0a0a0;
+    }
+
+    .dark-theme input[type="text"]::placeholder {
+      color: #b0a69a;
+    }
+
+    button {
+      padding: 0 1.8rem;
+      font-size: 1rem;
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transform: rotate(45deg);
+      transition: var(--transition);
+      opacity: 0;
+    }
+
+    button:hover::after {
+      opacity: 1;
+      animation: shine 1.5s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: rotate(45deg) translateX(-100%); }
+      100% { transform: rotate(45deg) translateX(100%); }
+    }
+
+    button:hover {
+      background: #e55a2a;
+      transform: translateY(-2px);
+    }
+
+    /* Featured categories */
+    .featured-categories {
+      max-width: 1200px;
+      margin: 0 auto 3rem;
+      padding: 0 20px;
+      animation: appear 1s ease-out;
+    }
+
+    .featured-categories h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    .dark-theme .featured-categories h2 {
+      color: var(--text-light);
+    }
+
+    .categories {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .category {
+      background: var(--card-bg);
+      border-radius: 50px;
+      padding: 10px 25px;
+      font-size: 0.95rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(255, 107, 53, 0.1);
+      animation: float 6s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .category:nth-child(1) { animation-delay: 0s; }
+    .category:nth-child(2) { animation-delay: 0.5s; }
+    .category:nth-child(3) { animation-delay: 1s; }
+    .category:nth-child(4) { animation-delay: 1.5s; }
+    .category:nth-child(5) { animation-delay: 2s; }
+
+    .category:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(255, 107, 53, 0.2);
+      animation: none;
+    }
+
+    /* Results section */
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      padding: 0 5% 5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .video-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      transform: translateY(0);
+      will-change: transform;
+      border: 1px solid rgba(255, 107, 53, 0.1);
+      animation: card-appear 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes card-appear {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .video-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .video-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      transition: var(--transition);
+    }
+
+    .video-card:hover img {
+      transform: scale(1.03);
+    }
+
+    .video-info {
+      padding: 1.2rem;
+    }
+
+    .video-info h3 {
+      font-size: 1rem;
+      margin: 0 0 0.5rem;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-weight: 600;
+    }
+
+    .dark-theme .video-info h3 {
+      color: var(--text-light);
+    }
+
+    .video-info p {
+      font-size: 0.85rem;
+      color: var(--text);
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    .dark-theme .video-info p {
+      color: var(--text-light);
+      opacity: 0.7;
+    }
+
+    /* Processing animation */
+    .processing {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin: 3rem auto;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 107, 53, 0.2);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: rotate 1.2s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .processing p {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .dark-theme .processing p {
+      color: var(--text-light);
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal.active {
+      opacity: 1;
+      display: flex;
+    }
+
+    .modal-content {
+      width: 90%;
+      max-width: 800px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 107, 53, 0.2);
+    }
+
+    .modal.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal iframe {
+      width: 100%;
+      height: 450px;
+      display: block;
+      border: none;
+    }
+
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      color: var(--text);
+      font-size: 26px;
+      cursor: pointer;
+      z-index: 10000;
+      background: rgba(255, 255, 255, 0.8);
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .dark-theme .close {
+      background: rgba(44, 36, 27, 0.8);
+      color: var(--text-light);
+    }
+
+    .close:hover {
+      background: var(--primary);
+      color: white;
+      transform: rotate(90deg);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+      
+      #search-box {
+        flex-direction: column;
+        border-radius: var(--border-radius);
+      }
+      
+      input[type="text"] {
+        padding: 0.9rem;
+      }
+      
+      button {
+        padding: 0.9rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+      }
+      
+      .modal iframe {
+        height: 300px;
+      }
+      
+      #results {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+      
+      .featured-categories h2 {
+        font-size: 1.5rem;
+      }
+      
+      .category {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      nav {
+        padding: 1rem;
+      }
+      
+      .logo {
+        font-size: 1.5rem;
+      }
+      
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+      
+      #results {
+        grid-template-columns: 1fr;
+      }
+      
+      .categories {
+        gap: 10px;
+      }
+      
+      .category {
+        padding: 6px 15px;
+      }
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text);
+      font-size: 0.85rem;
+      opacity: 0.7;
+      border-top: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .dark-theme footer {
+      color: var(--text-light);
+    }
+
+    /* Animation delays for cards */
+    .video-card:nth-child(1) { animation-delay: 0.1s; }
+    .video-card:nth-child(2) { animation-delay: 0.2s; }
+    .video-card:nth-child(3) { animation-delay: 0.3s; }
+    .video-card:nth-child(4) { animation-delay: 0.4s; }
+    .video-card:nth-child(5) { animation-delay: 0.5s; }
+    .video-card:nth-child(6) { animation-delay: 0.6s; }
+    .video-card:nth-child(7) { animation-delay: 0.7s; }
+    .video-card:nth-child(8) { animation-delay: 0.8s; }
+    .video-card:nth-child(9) { animation-delay: 0.9s; }
+    .video-card:nth-child(10) { animation-delay: 1.0s; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">
+      <img src="favicon1.ico" alt="logo.png" style="height: 30px; vertical-align: -7px; margin-right: -8px;">
+      <h4 style="color: #4895ef;"><span>otify</span></h4>
+
+    </div>
+    <button class="theme-toggle" id="themeToggle">
+      <i class="fas fa-moon"></i>
+    </button>
+  </nav>
+
+  <div class="hero">
+    <h1>Find Your Favorite Videos</h1>
+    <p>Search through millions of YouTube videos and watch them in stunning quality with Notify</p>
+    
+    <div id="search-box">
+      <input type="text" id="query" placeholder="Search for videos..." />
+      <button onclick="searchVideos()"><i class="fas fa-search"></i> Search</button>
+    </div>
+  </div>
+
+  <!-- Featured Categories -->
+  <div class="featured-categories">
+    <h2>Popular Categories</h2>
+    <div class="categories">
+      <div class="category" onclick="searchCategory('best hindi beat Music')">Music</div>
+      <div class="category" onclick="searchCategory('apna college dbms')">DBMS</div>
+      <div class="category" onclick="searchCategory('AI ML Krish Naik')">AI/ML</div>
+      <div class="category" onclick="searchCategory('striver take you forward')">Striver</div>
+      <div class="category" onclick="searchCategory('Technology')">Technology</div>
+    </div>
+  </div>
+
+  <div class="processing" id="processing">
+    <div class="loader"></div>
+    <p>You deserve the best...</p>
+  </div>
+
+  <div id="results"></div>
+
+  <!-- Modal -->
+  <div id="videoModal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal(event)">&times;</span>
+      <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Notify - All rights reserved. Crafted with ❤️ for students everywhere.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    const API_KEY = 'AIzaSyC8oqFflUQqktVZiDuJ1DkTXDZoB-Txrs8';
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = themeToggle.querySelector('i');
+    const body = document.body;
+    const processingEl = document.getElementById('processing');
+    
+    // Set initial theme based on time
+    function setInitialTheme() {
+      const now = new Date();
+      const hour = now.getHours();
+      // After 6 PM (18:00) - dark mode
+      if (hour >= 18) {
+        body.classList.add('dark-theme');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+      } else {
+        body.classList.remove('dark-theme');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+      }
+    }
+    
+    // Toggle theme
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-theme');
+      
+      if (body.classList.contains('dark-theme')) {
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+      } else {
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+      }
+    });
+    
+    // Search on Enter key
+    document.getElementById('query').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        searchVideos();
+      }
+    });
+    
+    // Search by category
+    function searchCategory(category) {
+      document.getElementById('query').value = category;
+      searchVideos();
+    }
+    
+    function searchVideos() {
+      const query = document.getElementById('query').value.trim();
+      if (!query) {
+        alert("Please enter a search term");
+        return;
+      }
+      
+      // Show processing animation
+      processingEl.style.display = 'flex';
+      document.getElementById('results').innerHTML = '';
+      
+      // Simulate 2 second processing
+      setTimeout(() => {
+        performSearch(query);
+      }, 2000);
+    }
+    
+    function performSearch(query) {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&maxResults=15&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          processingEl.style.display = 'none';
+          const resultsDiv = document.getElementById('results');
+          resultsDiv.innerHTML = '';
+
+          if (!data.items || data.items.length === 0) {
+            resultsDiv.innerHTML = '<p class="no-results">No results found. Try a different search term.</p>';
+            return;
+          }
+
+          data.items.forEach((item, index) => {
+            if (!item.id.videoId) return;
+
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const thumbnail = item.snippet.thumbnails.high.url;
+            const channel = item.snippet.channelTitle;
+            const date = new Date(item.snippet.publishedAt).toLocaleDateString();
+
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+              <img src="${thumbnail}" alt="${title}">
+              <div class="video-info">
+                <h3>${title}</h3>
+                <p>${channel} • ${date}</p>
+              </div>
+            `;
+            card.addEventListener('click', () => {
+              openModal(videoId);
+            });
+
+            resultsDiv.appendChild(card);
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching videos:", error);
+          processingEl.style.display = 'none';
+          document.getElementById('results').innerHTML = '<p class="error">Something went wrong. Please try again later.</p>';
+        });
+    }
+
+    function openModal(videoId) {
+      const modal = document.getElementById('videoModal');
+      const frame = document.getElementById('videoFrame');
+      
+      // Set modal to display first to enable transitions
+      modal.style.display = 'flex';
+      
+      // Add small delay to trigger animation
+      setTimeout(() => {
+        modal.classList.add('active');
+      }, 10);
+      
+      // Set iframe source with autoplay
+      frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      const modal = document.getElementById('videoModal');
+      const frame = document.getElementById('videoFrame');
+
+      // Only close if clicking the backdrop or close icon
+      if (event.target.classList.contains('modal') || event.target.classList.contains('close')) {
+        // Stop the video immediately
+        frame.src = '';
+        
+        // Start fade out animation
+        modal.classList.remove('active');
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+          modal.style.display = 'none';
+        }, 300);
+        
+        document.body.style.overflow = 'auto';
+      }
+    }
+    
+    // Initialize
+    setInitialTheme();
+    
+    // Add initial animation to featured categories
+    document.querySelectorAll('.category').forEach((category, index) => {
+      category.style.animationDelay = `${index * 0.1}s`;
+    });
+  </script>
+</body>
+</html>
