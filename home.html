@@ -1224,7 +1224,11 @@
             gap: 25px;
             margin-top: 20px;
         }
-
+        .file-action.delete.disabled {
+            background: #cccccc !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
         .group-card {
             background: white;
             border-radius: 15px;
@@ -4106,34 +4110,41 @@
         function loadSubjectFiles(subject) {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (!currentUser) return;
-            
+
             const filesContainer = document.getElementById('subject-files');
             filesContainer.innerHTML = '';
-            
+
             // Get personal files
             const personalFiles = currentUser.subjectFiles && currentUser.subjectFiles[subject] || [];
-            
+
             // Get department files for this subject
             departmentFilesRef.child(`${currentUser.department}/${currentUser.year}/${subject}`).once("value", snapshot => {
                 const departmentFiles = snapshot.exists() ? snapshot.val() : [];
-                
+
                 // Combine personal and department files
                 const allFiles = [...personalFiles, ...departmentFiles];
-                
+
                 if (allFiles.length === 0) {
                     filesContainer.innerHTML = '<p>No files available. Upload some study materials!</p>';
                     return;
                 }
-                
+
+                // Get admin username for the department
+                const adminUsername = getAdminForDepartment(currentUser.department);
+                const isAdmin = currentUser.username === adminUsername;
+
                 // Display all files
                 allFiles.forEach(file => {
                     const isDepartmentFile = file.uploadedBy && file.uploadedBy.startsWith('admin');
                     
+                    // Determine if delete button should be enabled
+                    const canDelete = !isDepartmentFile || (isDepartmentFile && isAdmin);
+
                     const fileCard = document.createElement('div');
                     fileCard.className = 'file-card';
                     fileCard.setAttribute('data-file-id', file.id);
                     fileCard.setAttribute('data-file-source', isDepartmentFile ? 'department' : 'personal');
-                    
+
                     // Determine admin badge class
                     let adminClass = '';
                     if (file.uploadedBy === 'admincsds') adminClass = 'admin-csds';
@@ -4141,7 +4152,7 @@
                     else if (file.uploadedBy === 'adminaiml') adminClass = 'admin-aiml';
                     else if (file.uploadedBy === 'admincys') adminClass = 'admin-cys';
                     else if (file.uploadedBy === 'adminiot') adminClass = 'admin-iot';
-                    
+
                     fileCard.innerHTML = `
                         <div class="file-icon">
                             <i class="${getFileIcon(file.type)}"></i>
@@ -4158,26 +4169,29 @@
                                 <a href="${file.downloadURL}" target="_blank" class="file-action download">
                                     <i class="fas fa-download"></i> Download
                                 </a>
-                                <button class="file-action delete">
+                                <button class="file-action delete ${canDelete ? '' : 'disabled'}" 
+                                        ${canDelete ? '' : 'disabled title="Only admins can delete department files"'}
+                                        style="${canDelete ? '' : 'cursor: not-allowed;'}">
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
                             </div>
                         </div>
                     `;
                     filesContainer.appendChild(fileCard);
-                    
-                    // Add delete event
-                    const deleteBtn = fileCard.querySelector('.file-action.delete');
-                    deleteBtn.addEventListener('click', () => {
-                        deleteFile(file, isDepartmentFile, subject);
-                    });
+
+                    // Only add delete event if allowed
+                    if (canDelete) {
+                        const deleteBtn = fileCard.querySelector('.file-action.delete');
+                        deleteBtn.addEventListener('click', () => {
+                            deleteFile(file, isDepartmentFile, subject);
+                        });
+                    }
                 });
             });
-            
+
             // Show admin notification if user is admin
-            const adminUsername = getAdminForDepartment(currentUser.department);
             const adminNotification = document.getElementById('admin-upload-notification');
-            if (currentUser.username === adminUsername) {
+            if (isAdmin) {
                 adminNotification.style.display = 'flex';
             } else {
                 adminNotification.style.display = 'none';
@@ -4247,19 +4261,20 @@
         // Delete a file
         function deleteFile(file, isDepartmentFile, subject) {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const adminUsername = getAdminForDepartment(currentUser.department);
+            const isAdmin = currentUser.username === adminUsername;
             
+            // Prevent non-admins from deleting department files
+            if (isDepartmentFile && !isAdmin) {
+                showNotification('Only admins can delete department files', false);
+                return;
+            }
+
             // Delete from Firebase Storage
             const storageRef = storage.ref().child(file.storagePath);
             storageRef.delete().then(() => {
                 // File deleted successfully
                 if (isDepartmentFile) {
-                    // Only admin can delete department files
-                    const adminUsername = getAdminForDepartment(currentUser.department);
-                    if (currentUser.username !== adminUsername) {
-                        showNotification('Only admin can delete department files', false);
-                        return;
-                    }
-                    
                     // Delete from department files
                     const deptFilesRef = database.ref(`departmentFiles/${currentUser.department}/${currentUser.year}/${subject}`);
                     
